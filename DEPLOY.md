@@ -41,6 +41,29 @@ RECIPIENT_EMAIL=email-destino@gmail.com
 
 **⚠️ IMPORTANTE**: Todas estas variables son **OBLIGATORIAS** para el funcionamiento correcto de la aplicación. Si faltan, la API devolverá un error de configuración.
 
+#### 🔧 Solución de problemas con variables de entorno
+
+Si aparece el error **"No environment variables were created"**:
+
+1. **Verificar que no existan variables duplicadas**:
+   - Ve a Settings > Environment Variables en Vercel
+   - Elimina cualquier variable existente con el mismo nombre
+   - Intenta crear las variables una por una
+
+2. **Crear variables individualmente**:
+   - No uses el botón "Import .env"
+   - Crea cada variable manualmente usando "Add Another"
+   - Asegúrate de seleccionar todos los entornos (Production, Preview, Development)
+
+3. **Verificar formato**:
+   - No incluyas espacios extra en los nombres de las variables
+   - No uses comillas en los valores
+   - Ejemplo correcto: `SMTP_HOST` = `smtp.gmail.com`
+
+4. **Redesplegar después de agregar variables**:
+   - Ve a la pestaña "Deployments"
+   - Haz clic en "Redeploy" en el último deployment
+
 ### 4. Configuración de Gmail (si usas Gmail)
 1. Habilita la autenticación de 2 factores en tu cuenta de Gmail
 2. Genera una "Contraseña de aplicación" (App Password)
