@@ -70,6 +70,8 @@ Si aparece el error **"500: INTERNAL_SERVER_ERROR" con "FUNCTION_INVOCATION_FAIL
 
 ### Causa
 Este error típicamente ocurre cuando:
+- **CAUSA PRINCIPAL:** Uso incorrecto de `import.meta.env` en funciones serverless de Vercel
+- En funciones serverless, las variables de entorno deben accederse via `process.env`
 - La función serverless falla debido a excepciones no manejadas
 - Dependencias faltantes o incorrectas
 - Problemas de configuración del servicio de email
@@ -78,12 +80,20 @@ Este error típicamente ocurre cuando:
 ### Solución
 Las siguientes mejoras han sido implementadas en `send-brief.ts`:
 
-1. **Imports no utilizados removidos**: Eliminado el import de `uuid` que causaba warnings de build
-2. **Manejo de errores mejorado**: Agregados bloques try-catch alrededor de:
+1. **Corrección crítica de variables de entorno:**
+   - Cambiado `import.meta.env` por `process.env` en todas las referencias
+   - Esto es esencial para funciones serverless en Vercel
+   - Variables afectadas: `SMTP_USER`, `SMTP_PASS`, `SMTP_HOST`, `SMTP_PORT`, `EMAIL_TO`, `RECIPIENT_EMAIL`
+
+2. **Imports no utilizados removidos**: Eliminado el import de `uuid` que causaba warnings de build
+
+3. **Manejo de errores mejorado**: Agregados bloques try-catch alrededor de:
    - Creación del transporter de Nodemailer
    - Operaciones de envío de email
-3. **Respuestas de error detalladas**: Todos los errores ahora devuelven respuestas JSON apropiadas con mensajes descriptivos
-4. **Validación de entorno**: Validación comprensiva de todas las variables SMTP requeridas
+
+4. **Respuestas de error detalladas**: Todos los errores ahora devuelven respuestas JSON apropiadas con mensajes descriptivos
+
+5. **Validación de entorno**: Validación comprensiva de todas las variables SMTP requeridas usando `process.env`
 
 ### Pasos de verificación
 1. Revisar los logs de funciones de Vercel para detalles específicos del error

@@ -10,14 +10,14 @@ export const POST: APIRoute = async ({ request, params }) => {
     const t = await useTranslations(lang as any)();
     const data = await request.json();
 
-    // Validate environment variables
-    const recipientEmail = import.meta.env.EMAIL_TO || import.meta.env.RECIPIENT_EMAIL;
-    if (!import.meta.env.SMTP_USER || !import.meta.env.SMTP_PASS || !recipientEmail) {
+    // Environment variables validation (use process.env for serverless functions)
+    const recipientEmail = process.env.EMAIL_TO || process.env.RECIPIENT_EMAIL;
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS || !recipientEmail) {
       console.error('Missing required environment variables:', {
-        SMTP_USER: !!import.meta.env.SMTP_USER,
-        SMTP_PASS: !!import.meta.env.SMTP_PASS,
-        EMAIL_TO: !!import.meta.env.EMAIL_TO,
-        RECIPIENT_EMAIL: !!import.meta.env.RECIPIENT_EMAIL
+        SMTP_USER: !!process.env.SMTP_USER,
+        SMTP_PASS: !!process.env.SMTP_PASS,
+        EMAIL_TO: !!process.env.EMAIL_TO,
+        RECIPIENT_EMAIL: !!process.env.RECIPIENT_EMAIL
       });
       return new Response(
         JSON.stringify({
@@ -49,12 +49,12 @@ export const POST: APIRoute = async ({ request, params }) => {
     let transporter;
     try {
       transporter = nodemailer.createTransporter({
-        host: import.meta.env.SMTP_HOST || 'smtp.gmail.com',
-        port: parseInt(import.meta.env.SMTP_PORT || '587'),
+        host: process.env.SMTP_HOST || 'smtp.gmail.com',
+        port: parseInt(process.env.SMTP_PORT || '587'),
         secure: false,
         auth: {
-          user: import.meta.env.SMTP_USER,
-          pass: import.meta.env.SMTP_PASS,
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS,
         },
       });
     } catch (transporterError) {
@@ -232,7 +232,7 @@ export const POST: APIRoute = async ({ request, params }) => {
     // Send email
     try {
       await transporter.sendMail({
-        from: import.meta.env.SMTP_USER,
+        from: process.env.SMTP_USER,
         to: recipientEmail,
         subject: `Req: ${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}`,
         html: emailContent,

@@ -7,8 +7,27 @@ const POST = async ({ request, params }) => {
     const lang = params.lang;
     const t = await useTranslations(lang)();
     const data = await request.json();
-    const recipientEmail = "franco@mediadigitalgroup.com";
-    if (!recipientEmail) ;
+    const recipientEmail = process.env.EMAIL_TO || process.env.RECIPIENT_EMAIL;
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS || !recipientEmail) {
+      console.error("Missing required environment variables:", {
+        SMTP_USER: !!process.env.SMTP_USER,
+        SMTP_PASS: !!process.env.SMTP_PASS,
+        EMAIL_TO: !!process.env.EMAIL_TO,
+        RECIPIENT_EMAIL: !!process.env.RECIPIENT_EMAIL
+      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Server configuration error. Please contact administrator."
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
+    }
     const generateDevID = () => {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
       let result = "";
@@ -21,12 +40,12 @@ const POST = async ({ request, params }) => {
     let transporter;
     try {
       transporter = nodemailer.createTransporter({
-        host: "smtp.gmail.com",
-        port: parseInt("587"),
+        host: process.env.SMTP_HOST || "smtp.gmail.com",
+        port: parseInt(process.env.SMTP_PORT || "587"),
         secure: false,
         auth: {
-          user: "franco@mediadigitalgroup.com",
-          pass: "gdbb yqgg oswr aoef"
+          user: process.env.SMTP_USER,
+          pass: process.env.SMTP_PASS
         }
       });
     } catch (transporterError) {
@@ -200,7 +219,7 @@ const POST = async ({ request, params }) => {
     `;
     try {
       await transporter.sendMail({
-        from: "franco@mediadigitalgroup.com",
+        from: process.env.SMTP_USER,
         to: recipientEmail,
         subject: `Req: ${data.country}-${data.product || "N/A"}-${devId}-${data.requester_name}`,
         html: emailContent
