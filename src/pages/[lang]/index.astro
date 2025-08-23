@@ -5,6 +5,7 @@ import LanguageSelector from '../../components/LanguageSelector.astro';
 import { getLangFromUrl, useTranslations, getStaticPaths } from '../../i18n';
 
 export { getStaticPaths };
+export const prerender = true;
 
 const lang = Astro.params.lang!;
 const t = await useTranslations(lang as any)();
