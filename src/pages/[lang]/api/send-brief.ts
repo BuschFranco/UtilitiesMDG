@@ -1,6 +1,5 @@
 import type { APIRoute } from 'astro';
 import nodemailer from 'nodemailer';
-import { v4 as uuidv4 } from 'uuid';
 import { useTranslations, getStaticPaths } from '../../../i18n';
 
 export { getStaticPaths };
@@ -47,15 +46,32 @@ export const POST: APIRoute = async ({ request, params }) => {
     const devId = generateDevID();
 
     // Email configuration
-    const transporter = nodemailer.createTransport({
-      host: import.meta.env.SMTP_HOST || 'smtp.gmail.com',
-      port: parseInt(import.meta.env.SMTP_PORT || '587'),
-      secure: false,
-      auth: {
-        user: import.meta.env.SMTP_USER,
-        pass: import.meta.env.SMTP_PASS,
-      },
-    });
+    let transporter;
+    try {
+      transporter = nodemailer.createTransporter({
+        host: import.meta.env.SMTP_HOST || 'smtp.gmail.com',
+        port: parseInt(import.meta.env.SMTP_PORT || '587'),
+        secure: false,
+        auth: {
+          user: import.meta.env.SMTP_USER,
+          pass: import.meta.env.SMTP_PASS,
+        },
+      });
+    } catch (transporterError) {
+      console.error('Error creating email transporter:', transporterError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Email service configuration error.',
+        }),
+        {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    }
 
     // Create email content with translations
     const emailContent = `
@@ -214,12 +230,29 @@ export const POST: APIRoute = async ({ request, params }) => {
     `;
 
     // Send email
-    await transporter.sendMail({
-      from: import.meta.env.SMTP_USER,
-      to: import.meta.env.EMAIL_TO || import.meta.env.RECIPIENT_EMAIL,
-      subject: `Req: ${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}`,
-      html: emailContent,
-    });
+    try {
+      await transporter.sendMail({
+        from: import.meta.env.SMTP_USER,
+        to: recipientEmail,
+        subject: `Req: ${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}`,
+        html: emailContent,
+      });
+    } catch (emailError) {
+      console.error('Error sending email:', emailError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Failed to send email. Please check email configuration.',
+          details: emailError instanceof Error ? emailError.message : 'Unknown email error'
+        }),
+        {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    }
 
     return new Response(
       JSON.stringify({

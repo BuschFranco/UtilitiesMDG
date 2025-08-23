@@ -18,15 +18,32 @@ const POST = async ({ request, params }) => {
       return result;
     };
     const devId = generateDevID();
-    const transporter = nodemailer.createTransport({
-      host: "smtp.gmail.com",
-      port: parseInt("587"),
-      secure: false,
-      auth: {
-        user: "franco@mediadigitalgroup.com",
-        pass: "gdbb yqgg oswr aoef"
-      }
-    });
+    let transporter;
+    try {
+      transporter = nodemailer.createTransporter({
+        host: "smtp.gmail.com",
+        port: parseInt("587"),
+        secure: false,
+        auth: {
+          user: "franco@mediadigitalgroup.com",
+          pass: "gdbb yqgg oswr aoef"
+        }
+      });
+    } catch (transporterError) {
+      console.error("Error creating email transporter:", transporterError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Email service configuration error."
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
+    }
     const emailContent = `
       <html>
         <head>
@@ -181,12 +198,29 @@ const POST = async ({ request, params }) => {
         </body>
       </html>
     `;
-    await transporter.sendMail({
-      from: "franco@mediadigitalgroup.com",
-      to: "franco@mediadigitalgroup.com",
-      subject: `Req: ${data.country}-${data.product || "N/A"}-${devId}-${data.requester_name}`,
-      html: emailContent
-    });
+    try {
+      await transporter.sendMail({
+        from: "franco@mediadigitalgroup.com",
+        to: recipientEmail,
+        subject: `Req: ${data.country}-${data.product || "N/A"}-${devId}-${data.requester_name}`,
+        html: emailContent
+      });
+    } catch (emailError) {
+      console.error("Error sending email:", emailError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: "Failed to send email. Please check email configuration.",
+          details: emailError instanceof Error ? emailError.message : "Unknown email error"
+        }),
+        {
+          status: 500,
+          headers: {
+            "Content-Type": "application/json"
+          }
+        }
+      );
+    }
     return new Response(
       JSON.stringify({
         success: true,

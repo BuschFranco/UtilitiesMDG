@@ -64,6 +64,35 @@ Si aparece el error **"No environment variables were created"**:
    - Ve a la pestaña "Deployments"
    - Haz clic en "Redeploy" en el último deployment
 
+#### 🔧 Solución de problemas con error 500 FUNCTION_INVOCATION_FAILED
+
+Si aparece el error **"500: INTERNAL_SERVER_ERROR" con "FUNCTION_INVOCATION_FAILED"**:
+
+### Causa
+Este error típicamente ocurre cuando:
+- La función serverless falla debido a excepciones no manejadas
+- Dependencias faltantes o incorrectas
+- Problemas de configuración del servicio de email
+- Fallos en la creación del transporter de Nodemailer
+
+### Solución
+Las siguientes mejoras han sido implementadas en `send-brief.ts`:
+
+1. **Imports no utilizados removidos**: Eliminado el import de `uuid` que causaba warnings de build
+2. **Manejo de errores mejorado**: Agregados bloques try-catch alrededor de:
+   - Creación del transporter de Nodemailer
+   - Operaciones de envío de email
+3. **Respuestas de error detalladas**: Todos los errores ahora devuelven respuestas JSON apropiadas con mensajes descriptivos
+4. **Validación de entorno**: Validación comprensiva de todas las variables SMTP requeridas
+
+### Pasos de verificación
+1. Revisar los logs de funciones de Vercel para detalles específicos del error
+2. Asegurar que todas las variables de entorno estén configuradas correctamente
+3. Verificar que las credenciales SMTP sean válidas y funcionen
+4. Probar la configuración de email con un cliente SMTP simple si es necesario
+
+Después de implementar estas correcciones, redesplegar la aplicación en Vercel.
+
 ### 4. Configuración de Gmail (si usas Gmail)
 1. Habilita la autenticación de 2 factores en tu cuenta de Gmail
 2. Genera una "Contraseña de aplicación" (App Password)
