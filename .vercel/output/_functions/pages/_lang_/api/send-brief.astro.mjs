@@ -7,6 +7,8 @@ const POST = async ({ request, params }) => {
     const lang = params.lang;
     const t = await useTranslations(lang)();
     const data = await request.json();
+    const recipientEmail = "franco@mediadigitalgroup.com";
+    if (!recipientEmail) ;
     const generateDevID = () => {
       const chars = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789";
       let result = "";
@@ -201,10 +203,12 @@ const POST = async ({ request, params }) => {
     );
   } catch (error) {
     console.error("Error sending brief:", error);
+    const errorMessage = error instanceof Error ? error.message : "Failed to send brief. Please try again.";
     return new Response(
       JSON.stringify({
         success: false,
-        error: "Failed to send brief. Please try again."
+        error: errorMessage,
+        details: process.env.NODE_ENV === "development" ? String(error) : void 0
       }),
       {
         status: 500,

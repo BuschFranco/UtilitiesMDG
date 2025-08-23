@@ -1,6 +1,14 @@
 # Despliegue en Vercel
 
 ## ✅ Problemas solucionados:
+
+### Error de producción en envío de solicitudes (SyntaxError)
+- **Problema**: Error 'SyntaxError: Unexpected token 'A'' al generar solicitudes en producción
+- **Causa**: Variables de entorno faltantes en Vercel causaban que la API devolviera HTML de error en lugar de JSON
+- **Solución**: 
+  - Agregada validación de variables de entorno en `send-brief.ts`
+  - Mejorado manejo de errores para siempre devolver JSON válido
+  - Soporte para ambas variables: `EMAIL_TO` y `RECIPIENT_EMAIL`
 - **Error 404**: Configuración de rutas y redirecciones corregida
 - **Adaptador de Vercel**: Actualizado a la versión más reciente
 - **Rutas estáticas**: Configuradas correctamente para prerender
@@ -30,6 +38,8 @@ SMTP_USER=tu-email@gmail.com
 SMTP_PASS=tu-app-password
 RECIPIENT_EMAIL=email-destino@gmail.com
 ```
+
+**⚠️ IMPORTANTE**: Todas estas variables son **OBLIGATORIAS** para el funcionamiento correcto de la aplicación. Si faltan, la API devolverá un error de configuración.
 
 ### 4. Configuración de Gmail (si usas Gmail)
 1. Habilita la autenticación de 2 factores en tu cuenta de Gmail

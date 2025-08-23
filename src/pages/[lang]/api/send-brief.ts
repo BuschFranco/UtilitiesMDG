@@ -11,6 +11,29 @@ export const POST: APIRoute = async ({ request, params }) => {
     const t = await useTranslations(lang as any)();
     const data = await request.json();
 
+    // Validate environment variables
+    const recipientEmail = import.meta.env.EMAIL_TO || import.meta.env.RECIPIENT_EMAIL;
+    if (!import.meta.env.SMTP_USER || !import.meta.env.SMTP_PASS || !recipientEmail) {
+      console.error('Missing required environment variables:', {
+        SMTP_USER: !!import.meta.env.SMTP_USER,
+        SMTP_PASS: !!import.meta.env.SMTP_PASS,
+        EMAIL_TO: !!import.meta.env.EMAIL_TO,
+        RECIPIENT_EMAIL: !!import.meta.env.RECIPIENT_EMAIL
+      });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Server configuration error. Please contact administrator.',
+        }),
+        {
+          status: 500,
+          headers: {
+            'Content-Type': 'application/json',
+          },
+        }
+      );
+    }
+
     // Generate unique DevID (5 characters)
     const generateDevID = () => {
       const chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
@@ -193,7 +216,7 @@ export const POST: APIRoute = async ({ request, params }) => {
     // Send email
     await transporter.sendMail({
       from: import.meta.env.SMTP_USER,
-      to: import.meta.env.EMAIL_TO,
+      to: import.meta.env.EMAIL_TO || import.meta.env.RECIPIENT_EMAIL,
       subject: `Req: ${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}`,
       html: emailContent,
     });
@@ -215,10 +238,14 @@ export const POST: APIRoute = async ({ request, params }) => {
   } catch (error) {
     console.error('Error sending brief:', error);
     
+    // Ensure we always return valid JSON
+    const errorMessage = error instanceof Error ? error.message : 'Failed to send brief. Please try again.';
+    
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'Failed to send brief. Please try again.',
+        error: errorMessage,
+        details: process.env.NODE_ENV === 'development' ? String(error) : undefined
       }),
       {
         status: 500,
