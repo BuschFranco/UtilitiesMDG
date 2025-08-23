@@ -1,0 +1,94 @@
+---
+import Layout from '../../layouts/Layout.astro';
+import BriefForm from '../../components/BriefForm.astro';
+import LanguageSelector from '../../components/LanguageSelector.astro';
+import { getLangFromUrl, useTranslations, getStaticPaths } from '../../i18n';
+
+export { getStaticPaths };
+
+const lang = Astro.params.lang!;
+const t = await useTranslations(lang as any)();
+---
+
+<Layout title={t.title} currentLang={lang}>
+  <main>
+    <div class="container">
+      <div class="header">
+        <h1 class="animate-fade-in-delay">{t.title}</h1>
+        <p class="subtitle animate-fade-in-delay-2">{t.subtitle}</p>
+      </div>
+      <div class="form-container animate-fade-in-delay-2">
+        <BriefForm translations={t} currentLang={lang} />
+      </div>
+    </div>
+  </main>
+</Layout>
+
+<style>
+  main {
+    padding-top: 1rem;
+  }
+
+  .header {
+    text-align: center;
+    margin-bottom: 3rem;
+  }
+  
+  .header h1 {
+    margin: 1rem 0 0.5rem 0;
+    color: var(--primary-color);
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, var(--primary-color), #3b82f6);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+  }
+  
+  .subtitle {
+    font-size: 1.3rem;
+    max-width: 600px;
+    line-height: 1.6;
+  }
+
+  .form-container {
+    max-width: 800px;
+    margin: 0 auto;
+  }
+
+  .header h1 {
+      font-size: 2rem;
+      margin: 1rem 0;
+    }
+
+  @media (max-width: 768px) {
+    .header h1 {
+      font-size: 2rem;
+      margin: 0;
+    }
+    
+    .subtitle {
+      font-size: 1.1rem;
+      padding: 0 1rem;
+    }
+
+    main {
+      padding-top: 4rem;
+    }
+  }
+
+  @media (max-width: 480px) {
+    .header h1 {
+      font-size: 1.8rem;
+    }
+    
+    .subtitle {
+      font-size: 1rem;
+      padding: 0 0.5rem;
+    }
+
+    main {
+      padding-top: 3.5rem;
+    }
+  }
+</style>

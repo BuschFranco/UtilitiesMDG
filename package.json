@@ -1,0 +1,20 @@
+{
+  "name": "brief-generator",
+  "type": "module",
+  "version": "0.0.1",
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview",
+    "astro": "astro"
+  },
+  "dependencies": {
+    "@astrojs/node": "^9.4.3",
+    "@types/nodemailer": "^7.0.1",
+    "@types/uuid": "^10.0.0",
+    "astro": "^5.13.3",
+    "jspdf": "^3.0.1",
+    "nodemailer": "^7.0.5",
+    "uuid": "^11.1.0"
+  }
+}
