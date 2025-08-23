@@ -4,6 +4,34 @@ import { useTranslations, getStaticPaths } from '../../../i18n';
 
 export { getStaticPaths };
 
+// Email configuration - You should set these as environment variables
+const EMAIL_CONFIG = {
+  host: process.env.SMTP_HOST || 'smtp.gmail.com',
+  port: parseInt(process.env.SMTP_PORT || '587'),
+  secure: false, // true for 465, false for other ports
+  auth: {
+    user: process.env.SMTP_USER || 'your-email@gmail.com',
+    pass: process.env.SMTP_PASS || 'your-app-password'
+  }
+};
+
+const RECIPIENT_EMAIL = process.env.RECIPIENT_EMAIL || 'your-email@gmail.com';
+
+// Check for missing variables
+function checkEnvVars() {
+  const required = ["SMTP_HOST", "SMTP_PORT", "SMTP_USER", "SMTP_PASS", "RECIPIENT_EMAIL"];
+  required.forEach((key) => {
+    if (!process.env[key]) {
+      console.warn(`[WARNING] Missing environment variable: ${key}`);
+    }
+  });
+}
+
+checkEnvVars();
+
+console.log("EMAIL_CONFIG:", EMAIL_CONFIG);
+console.log("RECIPIENT_EMAIL:", RECIPIENT_EMAIL);
+
 export const POST: APIRoute = async ({ request, params }) => {
   try {
     const lang = params.lang!;
@@ -11,13 +39,11 @@ export const POST: APIRoute = async ({ request, params }) => {
     const data = await request.json();
 
     // Environment variables validation (use process.env for serverless functions)
-    const recipientEmail = process.env.EMAIL_TO || process.env.RECIPIENT_EMAIL;
-    if (!process.env.SMTP_USER || !process.env.SMTP_PASS || !recipientEmail) {
+    if (!process.env.SMTP_USER || !process.env.SMTP_PASS || !RECIPIENT_EMAIL) {
       console.error('Missing required environment variables:', {
         SMTP_USER: !!process.env.SMTP_USER,
         SMTP_PASS: !!process.env.SMTP_PASS,
-        EMAIL_TO: !!process.env.EMAIL_TO,
-        RECIPIENT_EMAIL: !!process.env.RECIPIENT_EMAIL
+        RECIPIENT_EMAIL: !!RECIPIENT_EMAIL
       });
       return new Response(
         JSON.stringify({
@@ -48,15 +74,7 @@ export const POST: APIRoute = async ({ request, params }) => {
     // Email configuration
     let transporter;
     try {
-      transporter = nodemailer.createTransporter({
-        host: process.env.SMTP_HOST || 'smtp.gmail.com',
-        port: parseInt(process.env.SMTP_PORT || '587'),
-        secure: false,
-        auth: {
-          user: process.env.SMTP_USER,
-          pass: process.env.SMTP_PASS,
-        },
-      });
+      transporter = nodemailer.createTransport(EMAIL_CONFIG);
     } catch (transporterError) {
       console.error('Error creating email transporter:', transporterError);
       return new Response(
@@ -232,8 +250,8 @@ export const POST: APIRoute = async ({ request, params }) => {
     // Send email
     try {
       await transporter.sendMail({
-        from: process.env.SMTP_USER,
-        to: recipientEmail,
+        from: EMAIL_CONFIG.auth.user,
+        to: RECIPIENT_EMAIL,
         subject: `Req: ${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}`,
         html: emailContent,
       });

@@ -96,10 +96,33 @@ Las siguientes mejoras han sido implementadas en `send-brief.ts`:
 5. **Validación de entorno**: Validación comprensiva de todas las variables SMTP requeridas usando `process.env`
 
 ### Pasos de verificación
-1. Revisar los logs de funciones de Vercel para detalles específicos del error
-2. Asegurar que todas las variables de entorno estén configuradas correctamente
-3. Verificar que las credenciales SMTP sean válidas y funcionen
-4. Probar la configuración de email con un cliente SMTP simple si es necesario
+
+#### 1. Verificar variables de entorno en Vercel
+**CRÍTICO:** Las siguientes variables DEBEN estar configuradas en Vercel:
+- `SMTP_USER` - Usuario del servidor SMTP (ej: tu-email@gmail.com)
+- `SMTP_PASS` - Contraseña de aplicación del SMTP
+- `EMAIL_TO` o `RECIPIENT_EMAIL` - Email destinatario
+- `SMTP_HOST` - Servidor SMTP (opcional, default: smtp.gmail.com)
+- `SMTP_PORT` - Puerto SMTP (opcional, default: 587)
+
+**Cómo verificar en Vercel:**
+1. Ve a tu proyecto en Vercel Dashboard
+2. Settings → Environment Variables
+3. Verifica que todas las variables estén presentes
+4. Si faltan, agrégalas y redespliega
+
+#### 2. Forzar redespliegue
+Si las variables están configuradas pero el error persiste:
+1. Ve a Deployments en Vercel
+2. Encuentra el último deployment
+3. Haz clic en "Redeploy" para forzar un nuevo despliegue
+
+#### 3. Verificar logs de Vercel
+1. Ve a Functions → View Function Logs
+2. Busca errores específicos en `send-brief`
+3. Verifica que no aparezcan errores de variables de entorno faltantes
+4. Verificar que las credenciales SMTP sean válidas y funcionen
+5. Probar la configuración de email con un cliente SMTP simple si es necesario
 
 Después de implementar estas correcciones, redesplegar la aplicación en Vercel.
 
