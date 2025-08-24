@@ -1,6 +1,7 @@
 import type { APIRoute } from 'astro';
 import nodemailer from 'nodemailer';
 import { useTranslations, getStaticPaths } from '../../../i18n';
+import { getRequestsCollection, type RequestDocument } from '../../../lib/mongodb';
 
 export { getStaticPaths };
 
@@ -70,6 +71,48 @@ export const POST: APIRoute = async ({ request, params }) => {
     };
     
     const devId = generateDevID();
+
+    // Save request to MongoDB with timeout
+    const mongoTimeout = new Promise((_, reject) => {
+      setTimeout(() => reject(new Error('MongoDB operation timeout')), 8000);
+    });
+    
+    try {
+      const mongoOperation = async () => {
+        const requestsCollection = await getRequestsCollection();
+        const requestDocument: RequestDocument = {
+          devId,
+          requesterName: data.requester_name,
+          jiraTaskUrl: data.jira_task_url,
+          country: data.country,
+          product: data.product,
+          planType: data.plan_type,
+          maxiApproval: data.maxi_approval,
+          createdAt: new Date(),
+          // Campos adicionales
+          carriers: data.carriers,
+          flowType: data.flow_type,
+          trafficOrigin: data.traffic_origin,
+          copies: data.copies,
+          tcLinksFormatted: data.tc_links_formatted,
+          languages: data.languages,
+          banners: data.banners,
+          additionalImages: data.additional_images,
+          logos: data.logos,
+          landingFlow: data.landing_flow,
+          specialFeatures: data.special_features
+        };
+        
+        await requestsCollection.insertOne(requestDocument);
+        return `Request ${devId} saved to MongoDB successfully`;
+      };
+      
+      const result = await Promise.race([mongoOperation(), mongoTimeout]);
+      console.log(result);
+    } catch (mongoError) {
+      console.error('Error saving to MongoDB:', mongoError);
+      // Continue with email sending even if MongoDB fails
+    }
 
     // Email configuration
     let transporter;
