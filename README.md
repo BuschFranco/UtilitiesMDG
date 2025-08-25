@@ -13,7 +13,7 @@ Aplicación web desarrollada en Astro para generar briefs de landing pages y env
 
 ## 📋 Campos del Brief
 
-### 1. Aprobación de Maxi
+### 1. Aprobación de Admin
 - Luz verde para desarrollo (Sí/No)
 
 ### 2. Información básica de la campaña

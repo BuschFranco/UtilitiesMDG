@@ -50,8 +50,8 @@ const { translations: t, currentLang } = Astro.props;
               </ul>
               <li set:html={t.maxiApprovalInfo3}></li>
             </ul>
-            <div class="contact-maxi-section">
-              <a href="mailto:maxi@mediadigitalgroup.com" target="_blank" class="contact-maxi-btn">
+            <div class="contact-admin-section">
+          <a href="mailto:admin@mediadigitalgroup.com" target="_blank" class="contact-admin-btn">
                 <span class="contact-icon">📧</span>
                 <span class="contact-text">{t.contactMaxi}</span>
               </a>
@@ -63,12 +63,12 @@ const { translations: t, currentLang } = Astro.props;
           <label class="form-label">Maxi: {currentLang === 'en' ? 'Green light for development:' : 'Luz verde para desarrollo:'}</label>
           <div class="radio-group">
             <label class="radio-option">
-              <input type="radio" name="maxi_approval" value="yes" required class="radio-input">
-              <span>{currentLang === 'en' ? 'Yes' : 'Sí'}</span>
+              <input type="radio" name="maxi_approval" value="approved" required class="radio-input">
+              <span>{currentLang === 'en' ? 'Approved' : 'Aprobado'}</span>
             </label>
             <label class="radio-option">
-              <input type="radio" name="maxi_approval" value="no" required class="radio-input">
-              <span>{currentLang === 'en' ? 'No' : 'No'}</span>
+              <input type="radio" name="maxi_approval" value="pending" required class="radio-input">
+              <span>{currentLang === 'en' ? 'Pending' : 'Pendiente'}</span>
             </label>
           </div>
         </div>
@@ -591,14 +591,14 @@ const { translations: t, currentLang } = Astro.props;
     font-size: 0.85rem;
   }
 
-  .contact-maxi-section {
+  .contact-admin-section {
     margin-top: 1rem;
     padding-top: 0.75rem;
     border-top: 1px solid #81d4fa;
     text-align: center;
   }
 
-  .contact-maxi-btn {
+  .contact-admin-btn {
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -613,7 +613,7 @@ const { translations: t, currentLang } = Astro.props;
     box-shadow: 0 2px 4px rgba(25, 118, 210, 0.2);
   }
 
-  .contact-maxi-btn:hover {
+  .contact-admin-btn:hover {
     background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
     transform: translateY(-1px);
     box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);

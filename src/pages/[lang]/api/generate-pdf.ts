@@ -27,7 +27,7 @@ export const POST: APIRoute = async ({ request, params }) => {
       timestamp: new Date().toLocaleString(),
       language: lang.toUpperCase(),
       data: {
-        maxi_approval: data.maxi_approval || 'N/A',
+        admin_approval: data.admin_approval || 'N/A',
         country: data.country || 'N/A',
         carriers: data.carriers || 'N/A',
         product: data.product || 'N/A',
@@ -48,7 +48,7 @@ export const POST: APIRoute = async ({ request, params }) => {
       },
       translations: {
         title: t.title,
-        maxiApproval: t.maxiApproval,
+        adminApproval: t.adminApproval,
         country: t.country,
         carriers: t.carriers,
         product: t.product,

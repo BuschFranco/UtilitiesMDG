@@ -85,7 +85,7 @@ export interface RequestDocument {
   country: string;
   product: string;
   planType: string;
-  maxiApproval: string;
+  adminApproval: string;
   createdAt: Date;
   // Campos adicionales opcionales
   carriers?: string;

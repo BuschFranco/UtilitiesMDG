@@ -161,7 +161,7 @@ export const POST: APIRoute = async ({ request, params }) => {
             <div class="section">
               <h3>1. ${t.maxiApproval}</h3>
               <div class="field">
-                <span class="label">Maxi's Approval:</span>
+                <span class="label">Admin's Approval:</span>
                 <span class="value">${data.maxi_approval || 'N/A'}</span>
               </div>
             </div>
