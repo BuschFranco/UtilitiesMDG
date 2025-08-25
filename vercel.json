@@ -7,13 +7,13 @@
   "rewrites": [
     {
       "source": "/",
-      "destination": "/es/"
+      "destination": "/en/"
     }
   ],
   "redirects": [
     {
       "source": "/index.html",
-      "destination": "/es/",
+      "destination": "/en/",
       "permanent": true
     }
   ]
