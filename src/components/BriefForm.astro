@@ -32,7 +32,7 @@ const { translations: t, currentLang } = Astro.props;
         </div>
       </section>
 
-      <!-- 1. Maxi's Approval -->
+      <!-- 1. Admin's Approval -->
       <section class="form-section scroll-animate">
         <h2 class="section-title"> {t.maxiApproval}</h2>
         
@@ -51,7 +51,7 @@ const { translations: t, currentLang } = Astro.props;
               <li set:html={t.maxiApprovalInfo3}></li>
             </ul>
             <div class="contact-admin-section">
-          <a href="mailto:admin@mediadigitalgroup.com" target="_blank" class="contact-admin-btn">
+          <a href="mailto:maxi@mediadigitalgroup.com" target="_blank" class="contact-admin-btn">
                 <span class="contact-icon">📧</span>
                 <span class="contact-text">{t.contactMaxi}</span>
               </a>
@@ -60,7 +60,7 @@ const { translations: t, currentLang } = Astro.props;
         </div>
         
         <div class="form-group">
-          <label class="form-label">Maxi: {currentLang === 'en' ? 'Green light for development:' : 'Luz verde para desarrollo:'}</label>
+          <label class="form-label">{t.maxiApproval}:</label>
           <div class="radio-group">
             <label class="radio-option">
               <input type="radio" name="maxi_approval" value="approved" required class="radio-input">
@@ -152,18 +152,7 @@ const { translations: t, currentLang } = Astro.props;
           </p>
         </div>
         <div class="form-group">
-          <label for="banners" class="form-label">{t.banners}:</label>
-          <div class="file-upload-container">
-            <input type="file" id="banners" name="banners" class="file-input" multiple accept="image/*">
-            <label for="banners" class="file-upload-label">
-              <span class="upload-icon">📁</span>
-              <span class="upload-text">{t.selectBannerImages}</span>
-            </label>
-            <div class="file-list" id="banners-list"></div>
-          </div>
-        </div>
-        <div class="form-group">
-          <label for="images" class="form-label">{t.images}:</label>
+          <label for="images" class="form-label">Imágenes y Banners:</label>
           <div class="file-upload-container">
             <input type="file" id="images" name="images" class="file-input" multiple accept="image/*">
             <label for="images" class="file-upload-label">
@@ -174,7 +163,7 @@ const { translations: t, currentLang } = Astro.props;
           </div>
         </div>
         <div class="form-group">
-          <label for="logos" class="form-label">{t.logos}:</label>
+          <label for="logos" class="form-label">{t.logos} (Opcional):</label>
           <div class="file-upload-container">
             <input type="file" id="logos" name="logos" class="file-input" multiple accept="image/*">
             <label for="logos" class="file-upload-label">
@@ -206,7 +195,7 @@ const { translations: t, currentLang } = Astro.props;
         </div>
         
         <div class="form-group">
-          <label for="special_functionalities" class="form-label">{t.specialFunctionalities}:</label>
+          <label for="special_functionalities" class="form-label">{t.specialFunctionalities} (Opcional):</label>
           <textarea id="special_functionalities" name="special_functionalities" class="form-textarea" rows="4" placeholder={t.specialFunctionalitiesPlaceholder}></textarea>
         </div>
       </section>
@@ -1495,7 +1484,7 @@ const { translations: t, currentLang } = Astro.props;
       addText(t.logos, briefData.logos || 'N/A', true);
       addText(t.technologyType, briefData.technology_type || 'N/A');
       addText(t.specialFunctionalities, briefData.special_functionalities || 'N/A', true);
-      addText(t.colors, briefData.colors || 'N/A', true);
+      addText(t.colors, briefData.colors_formatted || 'N/A', true);
       addText('Reference URL', briefData.reference_url || 'N/A');
       addText('Reference Image', briefData.reference_image ? 'Uploaded' : 'N/A');
       addText('Guidelines Document', briefData.guidelines_document ? 'Uploaded' : 'N/A');
@@ -1673,12 +1662,33 @@ const { translations: t, currentLang } = Astro.props;
         // Add language info
         briefData.language = currentLang;
 
+        // Create FormData to send files
+        const submitFormData = new FormData();
+        
+        // Add all text fields
+        Object.keys(briefData).forEach(key => {
+          if (key !== 'reference_image' && key !== 'guidelines_document' && key !== 'banners' && key !== 'images' && key !== 'logos') {
+            if (Array.isArray(briefData[key])) {
+              briefData[key].forEach(value => {
+                submitFormData.append(key + '[]', value);
+              });
+            } else {
+              submitFormData.append(key, briefData[key]);
+            }
+          }
+        });
+        
+        // Add files from original form
+        const originalFormData = new FormData(form);
+        for (const [key, value] of originalFormData.entries()) {
+          if (value instanceof File && value.size > 0) {
+            submitFormData.append(key, value);
+          }
+        }
+
         const response = await fetch(`/${currentLang}/api/send-brief`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify(briefData)
+          body: submitFormData
         });
 
         const result = await response.json();

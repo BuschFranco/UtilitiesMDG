@@ -37,9 +37,72 @@ export const POST: APIRoute = async ({ request, params }) => {
   try {
     const lang = params.lang!;
     const t = await useTranslations(lang as any)();
-    const data = await request.json();
+    const formData = await request.formData();
+    
+    // Convert FormData to object
+    const data: any = {};
+    const files: { [key: string]: File } = {};
+    
+    for (const [key, value] of formData.entries()) {
+      if (value instanceof File) {
+        files[key] = value;
+      } else {
+        if (key.endsWith('[]')) {
+          const cleanKey = key.replace('[]', '');
+          if (!data[cleanKey]) {
+            data[cleanKey] = [];
+          }
+          data[cleanKey].push(value);
+        } else {
+          data[key] = value;
+        }
+      }
+    }
 
-    // Environment variables validation (use process.env for serverless functions)
+     // Process colors data
+     if (data.colors && data.color_descriptions) {
+       const colorEntries = [];
+       for (let i = 0; i < data.colors.length; i++) {
+         if (data.colors[i] && data.color_descriptions[i]) {
+           colorEntries.push(`${data.colors[i]} - ${data.color_descriptions[i]}`);
+         }
+       }
+       data.colors_formatted = colorEntries.length > 0 ? colorEntries.join(', ') : 'N/A';
+     } else {
+       data.colors_formatted = 'N/A';
+     }
+
+     // Process TC links data
+     if (data.tc_links && data.tc_descriptions) {
+       const tcEntries = [];
+       for (let i = 0; i < data.tc_links.length; i++) {
+         if (data.tc_links[i] && data.tc_descriptions[i]) {
+           tcEntries.push(`${data.tc_descriptions[i]}: ${data.tc_links[i]}`);
+         }
+       }
+       data.tc_links_formatted = tcEntries.length > 0 ? tcEntries.join(', ') : 'N/A';
+     } else {
+       data.tc_links_formatted = 'N/A';
+     }
+
+     // Process file information for display
+     ['banners', 'images', 'logos'].forEach(field => {
+       if (files[field]) {
+         data[field] = files[field].name;
+       } else {
+         data[field] = 'N/A';
+       }
+     });
+
+     ['reference_image', 'guidelines_document'].forEach(field => {
+       if (files[field]) {
+         data[field] = files[field].name;
+       } else {
+         data[field] = 'N/A';
+       }
+     });
+
+     // Environment variables validation (use process.env for serverless functions)
     if (!process.env.SMTP_USER || !process.env.SMTP_PASS || !RECIPIENT_EMAIL) {
       console.error('Missing required environment variables:', {
         SMTP_USER: !!process.env.SMTP_USER,
@@ -290,6 +353,19 @@ export const POST: APIRoute = async ({ request, params }) => {
       </html>
     `;
 
+    // Prepare attachments
+    const attachments = [];
+    for (const [key, file] of Object.entries(files)) {
+      if (file && file.size > 0) {
+        const buffer = await file.arrayBuffer();
+        attachments.push({
+          filename: file.name,
+          content: Buffer.from(buffer),
+          contentType: file.type
+        });
+      }
+    }
+
     // Send email
     try {
       await transporter.sendMail({
@@ -297,6 +373,7 @@ export const POST: APIRoute = async ({ request, params }) => {
         to: RECIPIENT_EMAIL,
         subject: `Req: ${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}`,
         html: emailContent,
+        attachments: attachments
       });
     } catch (emailError) {
       console.error('Error sending email:', emailError);
