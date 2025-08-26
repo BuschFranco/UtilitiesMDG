@@ -8,8 +8,11 @@ const es: Translations = {
   
   // Form sections
   maxiApproval: 'Aprobación de Maxi',
+  adminApproval: 'Aprobación de Maxi',
   campaignInfo: 'Información de la Campaña',
+  basicInfo: 'Información Básica',
   landingInfo: 'Información de la Landing',
+  landingPageInfo: 'Información de la Landing Page',
   contentCopies: 'Contenido y Textos',
   graphicResources: 'Recursos Gráficos',
   technicalFunctionalities: 'Funcionalidades Técnicas',
@@ -74,7 +77,7 @@ const es: Translations = {
   countryPlaceholder: 'ej., PL, AT, ID, ES, SN, KZ...',
   carriersPlaceholder: 'ej., Vodafone, Plus, T-Mobile...',
   trafficOriginPlaceholder: 'ej., Afiliados, Google...',
-  copiesPlaceholder: 'TYC: Suscribiéndote a Magplus bla bla bla, Botón MSISDN: CONTINUAR, Botón PIN: SUSCRIBIRSE...',
+  copiesPlaceholder: '• Términos y Condiciones: "Al suscribirte..."\n• Botón MSISDN: "CONTINUAR"\n• Botón PIN: "SUSCRIBIRSE"\n• Título principal: ".."\n• Subtítulos: ".."',
   tcLinksPlaceholder: 'Incluye todos los enlaces de Términos y Condiciones y legales...',
   languagesPlaceholder: 'ej., Inglés, Español, Francés...',
   bannersPlaceholder: 'Describe los requisitos de banners, tamaños y especificaciones...',

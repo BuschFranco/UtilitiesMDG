@@ -32,49 +32,9 @@ const { translations: t, currentLang } = Astro.props;
         </div>
       </section>
 
-      <!-- 1. Admin's Approval -->
-      <section class="form-section scroll-animate">
-        <h2 class="section-title"> {t.maxiApproval}</h2>
-        
-        <!-- Información del proceso de aprobación -->
-        <div class="approval-info-banner">
-          <div class="approval-info-content">
-            <h4 class="approval-info-title" set:html={t.maxiApprovalTitle}></h4>
-            <ul class="approval-info-list">
-              <li set:html={t.maxiApprovalInfo1}></li>
-              <li set:html={t.maxiApprovalInfo2}></li>
-              <ul class="approval-sub-list">
-                <li set:html={t.maxiApprovalSubInfo1}></li>
-                <li set:html={t.maxiApprovalSubInfo2}></li>
-                <li set:html={t.maxiApprovalSubInfo3}></li>
-              </ul>
-              <li set:html={t.maxiApprovalInfo3}></li>
-            </ul>
-            <div class="contact-admin-section">
-          <a href="mailto:maxi@mediadigitalgroup.com" target="_blank" class="contact-admin-btn">
-                <span class="contact-icon">📧</span>
-                <span class="contact-text">{t.contactMaxi}</span>
-              </a>
-            </div>
-          </div>
-        </div>
-        
-        <div class="form-group">
-          <label class="form-label">{t.maxiApproval}:</label>
-          <div class="radio-group">
-            <label class="radio-option">
-              <input type="radio" name="maxi_approval" value="approved" required class="radio-input">
-              <span>{currentLang === 'en' ? 'Approved' : 'Aprobado'}</span>
-            </label>
-            <label class="radio-option">
-              <input type="radio" name="maxi_approval" value="pending" required class="radio-input">
-              <span>{currentLang === 'en' ? 'Pending' : 'Pendiente'}</span>
-            </label>
-          </div>
-        </div>
-      </section>
 
-      <!-- 2. Landing Information -->
+
+      <!-- 1. Landing Information -->
       <section class="form-section scroll-animate">
         <h2 class="section-title">{t.landingInfo}</h2>
         <div class="form-group">
@@ -109,7 +69,7 @@ const { translations: t, currentLang } = Astro.props;
         </div>
       </section>
 
-      <!-- 3. Content and Copies -->
+      <!-- 2. Content and Copies -->
       <section class="form-section scroll-animate">
         <h2 class="section-title"> {t.contentCopies}</h2>
         <div class="form-group">
@@ -142,7 +102,7 @@ const { translations: t, currentLang } = Astro.props;
         </div>
       </section>
 
-      <!-- 4. Graphic Resources -->
+      <!-- 3. Graphic Resources -->
       <section class="form-section scroll-animate">
         <h2 class="section-title"> {t.graphicResources}</h2>
         <div class="form-info-note">
@@ -175,24 +135,11 @@ const { translations: t, currentLang } = Astro.props;
         </div>
       </section>
 
-      <!-- 5. Technical Functionalities -->
+      <!-- 4. Technical Functionalities -->
       <section class="form-section scroll-animate">
         <h2 class="section-title"> {t.technicalFunctionalities}</h2>
         
-        <!-- Technology Type Selection -->
-        <div class="form-group">
-          <label for="technology_type" class="form-label">{t.technologyType}:</label>
-          <div class="technology-selection">
-            <select id="technology_type" name="technology_type" class="form-select" required>
-              <option value="">{currentLang === 'en' ? 'Select technology type' : 'Selecciona el tipo de tecnología'}</option>
-              <option value="new">{t.newTechnology}</option>
-              <option value="old">{t.oldTechnology}</option>
-            </select>
-            <div id="tech-warning" class="tech-warning" style="display: none;">
-              <span class="warning-text">{t.oldTechWarning}</span>
-            </div>
-          </div>
-        </div>
+
         
         <div class="form-group">
           <label for="special_functionalities" class="form-label">{t.specialFunctionalities} (Opcional):</label>
@@ -200,7 +147,7 @@ const { translations: t, currentLang } = Astro.props;
         </div>
       </section>
 
-      <!-- 6. Colores -->
+      <!-- 5. Colores -->
       <section class="form-section scroll-animate">
         <h2 class="section-title">{t.colors}</h2>
         <div class="form-group">
@@ -217,7 +164,7 @@ const { translations: t, currentLang } = Astro.props;
         </div>
       </section>
 
-      <!-- 7. Referencias -->
+      <!-- 6. Referencias -->
       <section class="form-section scroll-animate">
         <h2 class="section-title">{t.references}</h2>
         <div class="form-group">
@@ -531,127 +478,9 @@ const { translations: t, currentLang } = Astro.props;
     font-style: italic;
   }
 
-  /* Approval Info Banner Styles */
-  .approval-info-banner {
-    background: linear-gradient(135deg, #e0f2fe 0%, #b3e5fc 100%);
-    border: 1px solid #0288d1;
-    border-radius: 8px;
-    padding: 1rem;
-    margin-bottom: 1.5rem;
-    box-shadow: 0 2px 4px rgba(2, 136, 209, 0.1);
-  }
 
-  .approval-info-content {
-    margin: 0;
-  }
 
-  .approval-info-title {
-    margin: 0 0 0.75rem 0;
-    color: #01579b;
-    font-size: 1rem;
-    font-weight: 600;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
 
-  .approval-info-list {
-    margin: 0;
-    padding: 0;
-    list-style: none;
-    color: #0277bd;
-    font-size: 0.9rem;
-    line-height: 1.5;
-  }
-
-  .approval-info-list li {
-    margin-bottom: 0.5rem;
-  }
-
-  .approval-sub-list {
-    margin: 0.5rem 0 0 1rem;
-    padding: 0;
-    list-style: none;
-  }
-
-  .approval-sub-list li {
-    margin-bottom: 0.25rem;
-    color: #0288d1;
-    font-size: 0.85rem;
-  }
-
-  .contact-admin-section {
-    margin-top: 1rem;
-    padding-top: 0.75rem;
-    border-top: 1px solid #81d4fa;
-    text-align: center;
-  }
-
-  .contact-admin-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    background: linear-gradient(135deg, #1976d2 0%, #1565c0 100%);
-    color: white;
-    text-decoration: none;
-    padding: 0.5rem 1rem;
-    border-radius: 6px;
-    font-size: 0.875rem;
-    font-weight: 500;
-    transition: all 0.2s ease;
-    box-shadow: 0 2px 4px rgba(25, 118, 210, 0.2);
-  }
-
-  .contact-admin-btn:hover {
-    background: linear-gradient(135deg, #1565c0 0%, #0d47a1 100%);
-    transform: translateY(-1px);
-    box-shadow: 0 4px 8px rgba(25, 118, 210, 0.3);
-    color: white;
-    text-decoration: none;
-  }
-
-  .contact-icon {
-    font-size: 1rem;
-  }
-
-  .contact-text {
-    font-size: 0.875rem;
-  }
-
-  /* Technology Selection Styles */
-  .technology-selection {
-    position: relative;
-  }
-
-  .tech-warning {
-    background: linear-gradient(135deg, #fef3c7 0%, #fde68a 100%);
-    border: 1px solid #f59e0b;
-    border-radius: 6px;
-    padding: 0.75rem;
-    margin-top: 0.5rem;
-    box-shadow: 0 2px 4px rgba(245, 158, 11, 0.1);
-    animation: slideDown 0.3s ease-out;
-  }
-
-  .warning-text {
-    color: #92400e;
-    font-size: 0.875rem;
-    font-weight: 500;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-  }
-
-  @keyframes slideDown {
-    from {
-      opacity: 0;
-      transform: translateY(-10px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
-  }
 
   .contact-juli-btn {
     display: inline-block;
@@ -1467,7 +1296,6 @@ const { translations: t, currentLang } = Astro.props;
       // Add form data
       addText(t.requesterName, briefData.requester_name || 'N/A');
       addText(t.jiraTaskUrl, briefData.jira_task_url || 'N/A');
-      addText(t.maxiApproval, briefData.maxi_approval || 'N/A');
       addText(t.country, briefData.country || 'N/A');
       addText(t.carriers, briefData.carriers || 'N/A');
       addText(t.product, briefData.product || 'N/A');
@@ -1482,7 +1310,7 @@ const { translations: t, currentLang } = Astro.props;
       addText(t.banners, briefData.banners || 'N/A', true);
       addText(t.images, briefData.images || 'N/A', true);
       addText(t.logos, briefData.logos || 'N/A', true);
-      addText(t.technologyType, briefData.technology_type || 'N/A');
+
       addText(t.specialFunctionalities, briefData.special_functionalities || 'N/A', true);
       addText(t.colors, briefData.colors_formatted || 'N/A', true);
       addText('Reference URL', briefData.reference_url || 'N/A');
@@ -1589,7 +1417,9 @@ const { translations: t, currentLang } = Astro.props;
         const formData = new FormData(form);
         
         // Convert FormData to object
-        const briefData = {};
+        const briefData = {
+          maxi_approval: 'Pending' // Always set to Pending
+        };
         
         // Handle regular fields and files separately
         for (const [key, value] of formData.entries()) {
@@ -1801,18 +1631,6 @@ const { translations: t, currentLang } = Astro.props;
       }
     });
 
-    // Technology type warning functionality
-    const technologySelect = document.getElementById('technology_type');
-    const techWarning = document.getElementById('tech-warning');
-    
-    if (technologySelect && techWarning) {
-      technologySelect.addEventListener('change', function() {
-        if (this.value === 'old') {
-          techWarning.style.display = 'block';
-        } else {
-          techWarning.style.display = 'none';
-        }
-      });
-    }
+
   });
 </script>

@@ -52,7 +52,7 @@ export const POST: APIRoute = async ({ request, params }) => {
         country: t.country,
         carriers: t.carriers,
         product: t.product,
-        technologyType: t.technologyType,
+
         flowType: t.flowType,
         trafficSource: t.trafficSource,
         copies: t.copies,

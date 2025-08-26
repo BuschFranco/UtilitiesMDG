@@ -1,7 +1,9 @@
 import type { APIRoute } from 'astro';
 import nodemailer from 'nodemailer';
+import puppeteer from 'puppeteer';
 import { useTranslations, getStaticPaths } from '../../../i18n';
 import { getRequestsCollection, type RequestDocument } from '../../../lib/mongodb';
+import JiraService from '../../../services/jira';
 
 export { getStaticPaths };
 
@@ -32,6 +34,188 @@ checkEnvVars();
 
 console.log("EMAIL_CONFIG:", EMAIL_CONFIG);
 console.log("RECIPIENT_EMAIL:", RECIPIENT_EMAIL);
+
+// Function to generate PDF using puppeteer
+async function generatePDF(data: any, devId: string, t: any): Promise<Buffer> {
+  const browser = await puppeteer.launch({
+    headless: true,
+    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  });
+  
+  try {
+    const page = await browser.newPage();
+    
+    // Process colors data
+    let colorsFormatted = 'N/A';
+    if (data.colors && data.color_descriptions) {
+      const colorEntries = [];
+      for (let i = 0; i < data.colors.length; i++) {
+        if (data.colors[i] && data.color_descriptions[i]) {
+          colorEntries.push(`${data.colors[i]} - ${data.color_descriptions[i]}`);
+        }
+      }
+      colorsFormatted = colorEntries.length > 0 ? colorEntries.join(', ') : 'N/A';
+    }
+
+    // Process TC links data
+    let tcLinksFormatted = 'N/A';
+    if (data.tc_links && data.tc_descriptions) {
+      const tcEntries = [];
+      for (let i = 0; i < data.tc_links.length; i++) {
+        if (data.tc_links[i] && data.tc_descriptions[i]) {
+          tcEntries.push(`${data.tc_descriptions[i]}: ${data.tc_links[i]}`);
+        }
+      }
+      tcLinksFormatted = tcEntries.length > 0 ? tcEntries.join(', ') : 'N/A';
+    }
+    
+    const htmlContent = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <meta charset="UTF-8">
+          <title>Brief Request - ${devId}</title>
+          <style>
+            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
+            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
+            .dev-id { font-size: 24px; font-weight: bold; color: #d32f2f; margin: 10px 0; }
+            .section { margin-bottom: 25px; }
+            .section h3 { background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0; border-left: 4px solid #2196f3; }
+            .field { margin-bottom: 10px; display: flex; }
+            .label { font-weight: bold; min-width: 200px; color: #333; }
+            .value { flex: 1; color: #666; }
+            .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 12px; color: #888; }
+          </style>
+        </head>
+        <body>
+          <div class="header">
+            <h1>${t.title}</h1>
+            <div class="dev-id">DevID: ${devId}</div>
+            <p>Generated on ${new Date().toLocaleString()}</p>
+          </div>
+          
+          <div class="content">
+            <div class="section">
+              <h3>1. ${t.adminApproval}</h3>
+              <div class="field">
+                <span class="label">${t.adminApproval}:</span>
+                <span class="value">${data.admin_approval || 'N/A'}</span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <h3>2. ${t.basicInfo}</h3>
+              <div class="field">
+                <span class="label">${t.country}:</span>
+                <span class="value">${data.country || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="label">${t.carriers}:</span>
+                <span class="value">${data.carriers || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="label">${t.product}:</span>
+                <span class="value">${data.product || 'N/A'}</span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <h3>3. ${t.landingPageInfo}</h3>
+              <div class="field">
+                <span class="label">${t.flowType}:</span>
+                <span class="value">${data.flow_type || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="label">${t.trafficSource}:</span>
+                <span class="value">${Array.isArray(data.traffic_source) ? data.traffic_source.join(', ') : (data.traffic_source || 'N/A')}</span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <h3>4. ${t.contentCopies}</h3>
+              <div class="field">
+                <span class="label">${t.copies}:</span>
+                <span class="value">${String(data.copies || 'N/A').replace(/\n/g, '<br>')}</span>
+              </div>
+              <div class="field">
+                <span class="label">${t.tcLinks}:</span>
+                <span class="value">${tcLinksFormatted}</span>
+              </div>
+              <div class="field">
+                <span class="label">${t.multilanguage}:</span>
+                <span class="value">${data.multilanguage || 'N/A'}</span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <h3>5. ${t.graphicResources}</h3>
+              <div class="field">
+                <span class="label">${t.banners}:</span>
+                <span class="value">${String(data.banners || 'N/A').replace(/\n/g, '<br>')}</span>
+              </div>
+              <div class="field">
+                <span class="label">${t.images}:</span>
+                <span class="value">${String(data.images || 'N/A').replace(/\n/g, '<br>')}</span>
+              </div>
+              <div class="field">
+                <span class="label">${t.logos}:</span>
+                <span class="value">${String(data.logos || 'N/A').replace(/\n/g, '<br>')}</span>
+              </div>
+              <div class="field">
+                <span class="label">${t.colors}:</span>
+                <span class="value">${colorsFormatted}</span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <h3>6. ${t.technicalFunctionalities}</h3>
+              <div class="field">
+                <span class="label">${t.landingFlow}:</span>
+                <span class="value">${data.landing_flow || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="label">${t.specialFunctionalities}:</span>
+                <span class="value">${String(data.special_functionalities || 'N/A').replace(/\n/g, '<br>')}</span>
+              </div>
+            </div>
+            
+            <div class="section">
+              <h3>7. ${t.requesterInfo}</h3>
+              <div class="field">
+                <span class="label">${t.requesterName}:</span>
+                <span class="value">${data.requester_name || 'N/A'}</span>
+              </div>
+              <div class="field">
+                <span class="label">${t.jiraTaskUrl}:</span>
+                <span class="value">${data.jira_task_url || 'N/A'}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p>Generated on ${new Date().toLocaleString()} | DevID: ${devId}</p>
+          </div>
+        </body>
+      </html>
+    `;
+    
+    await page.setContent(htmlContent);
+    const pdfBuffer = await page.pdf({
+      format: 'A4',
+      printBackground: true,
+      margin: {
+        top: '20mm',
+        right: '20mm',
+        bottom: '20mm',
+        left: '20mm'
+      }
+    });
+    
+    return Buffer.from(pdfBuffer);
+  } finally {
+    await browser.close();
+  }
+}
 
 export const POST: APIRoute = async ({ request, params }) => {
   try {
@@ -222,15 +406,7 @@ export const POST: APIRoute = async ({ request, params }) => {
           
           <div class="content">
             <div class="section">
-              <h3>1. ${t.maxiApproval}</h3>
-              <div class="field">
-                <span class="label">Admin's Approval:</span>
-                <span class="value">${data.maxi_approval || 'N/A'}</span>
-              </div>
-            </div>
-            
-            <div class="section">
-              <h3>2. ${t.landingInfo}</h3>
+              <h3>1. ${t.landingInfo}</h3>
               <div class="field">
                 <span class="label">${t.country}:</span>
                 <span class="value">${data.country || 'N/A'}</span>
@@ -258,7 +434,7 @@ export const POST: APIRoute = async ({ request, params }) => {
             </div>
             
             <div class="section">
-              <h3>3. ${t.contentCopies}</h3>
+              <h3>2. ${t.contentCopies}</h3>
               <div class="field">
                 <span class="label">${t.copies}:</span>
                 <div class="value">${String(data.copies || 'N/A').replace(/\n/g, '<br>')}</div>
@@ -282,7 +458,7 @@ export const POST: APIRoute = async ({ request, params }) => {
             </div>
             
             <div class="section">
-              <h3>4. ${t.graphicResources}</h3>
+              <h3>3. ${t.graphicResources}</h3>
               <div class="field">
                 <span class="label">${t.banners}:</span>
                 <div class="value">${data.banners && data.banners !== 'N/A' ? String(data.banners).replace(/\n/g, '<br>') : 'N/A'}</div>
@@ -298,11 +474,8 @@ export const POST: APIRoute = async ({ request, params }) => {
             </div>
             
             <div class="section">
-              <h3>5. ${t.technicalFunctionalities}</h3>
-              <div class="field">
-                <span class="label">${t.technologyType}:</span>
-                <span class="value">${data.technology_type === 'new' ? t.newTechnology : data.technology_type === 'old' ? t.oldTechnology : 'N/A'}</span>
-              </div>
+              <h3>4. ${t.technicalFunctionalities}</h3>
+
               <div class="field">
                 <span class="label">${t.specialFunctionalities}:</span>
                 <div class="value">${String(data.special_functionalities || 'N/A').replace(/\n/g, '<br>')}</div>
@@ -310,7 +483,7 @@ export const POST: APIRoute = async ({ request, params }) => {
             </div>
             
             <div class="section">
-              <h3>6. ${t.colors}</h3>
+              <h3>5. ${t.colors}</h3>
               <div class="field">
                 <span class="label">${t.colors}:</span>
                 <div class="value">${data.colors_formatted || 'N/A'}</div>
@@ -318,7 +491,7 @@ export const POST: APIRoute = async ({ request, params }) => {
             </div>
             
             <div class="section">
-              <h3>7. Reference Information</h3>
+              <h3>6. Reference Information</h3>
               <div class="field">
                 <span class="label">Reference URL:</span>
                 <span class="value">${data.reference_url || 'N/A'}</span>
@@ -334,7 +507,7 @@ export const POST: APIRoute = async ({ request, params }) => {
             </div>
             
             <div class="section">
-              <h3>8. ${t.requesterInfo}</h3>
+              <h3>7. ${t.requesterInfo}</h3>
               <div class="field">
                 <span class="label">${t.requesterName}:</span>
                 <span class="value">${data.requester_name || 'N/A'}</span>
@@ -390,6 +563,35 @@ export const POST: APIRoute = async ({ request, params }) => {
           },
         }
       );
+    }
+
+    // Generate PDF and create Jira task (optional - don't fail if Jira is not configured)
+    try {
+      const jiraService = new JiraService();
+      if (jiraService.isConfigured()) {
+        console.log('Creating Jira task for DevID:', devId);
+        
+        // Generate PDF content
+        const pdfBuffer = await generatePDF(data, devId, t);
+        
+        // Create Jira issue with PDF attachment
+        const issueKey = await jiraService.createIssueWithAttachment(
+          devId,
+          data.requester_name || 'Unknown',
+          data.country || 'Unknown',
+          data.product || 'Unknown',
+          `Brief request generated with DevID: ${devId}\n\nRequester: ${data.requester_name}\nCountry: ${data.country}\nProduct: ${data.product}\n\nThis task was automatically created when the brief request was submitted.`,
+          pdfBuffer,
+          `${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}.pdf`
+        );
+        
+        console.log('Jira task created successfully with PDF attachment:', issueKey);
+      } else {
+        console.log('Jira not configured, skipping task creation');
+      }
+    } catch (jiraError) {
+      console.error('Error creating Jira task (non-critical):', jiraError);
+      // Don't fail the entire request if Jira fails
     }
 
     return new Response(
