@@ -449,7 +449,7 @@ export const POST: APIRoute = async ({ request, params }) => {
         const pdfBuffer = await generatePDF(data, devId, lang);
         
         // Define title prefix for Jira task
-        const titlePrefix = isUpdate ? '[UPDATE] ' : '[NEW] ';
+        const titlePrefix = isUpdate ? '[MODIFY] ' : '[NEW] ';
         
         const issueData = {
           devId: devId,
