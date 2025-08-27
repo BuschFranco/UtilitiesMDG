@@ -81,7 +81,6 @@ export async function getRequestsCollection(): Promise<Collection> {
 export interface RequestDocument {
   devId: string;
   requesterName: string;
-
   country: string;
   product: string;
   planType: string;
@@ -93,8 +92,19 @@ export interface RequestDocument {
   trafficOrigin?: string;
   copies?: string;
   tcLinksFormatted?: string;
+  // Arrays originales para repoblar formulario
+  tcLinks?: string[];
+  tcDescriptions?: string[];
+  colors?: string[];
+  colorDescriptions?: string[];
+  // Campos que faltaban
+  subscriptionKeywords?: string;
+  priceText?: string;
+  specialFunctionalities?: string;
+  referenceUrl?: string;
+  // Jira task key
+  jiraTaskKey?: string;
   languages?: string;
-  banners?: string;
   additionalImages?: string;
   logos?: string;
   landingFlow?: string;

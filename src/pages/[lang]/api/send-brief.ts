@@ -161,6 +161,14 @@ async function generatePDF(data: any, devId: string, t: any): Promise<Buffer> {
                 <span class="label">${t.specialFunctionalities}:</span>
                 <span class="value">${String(data.special_functionalities || 'N/A').replace(/\n/g, '<br>')}</span>
               </div>
+              <div class="field">
+                <span class="label">Subscription/Unsubscription Keywords:</span>
+                <span class="value">${String(data.subscription_keywords || 'N/A').replace(/\n/g, '<br>')}</span>
+              </div>
+              <div class="field">
+                <span class="label">Text containing the price/pricepoint:</span>
+                <span class="value">${String(data.price_text || 'N/A').replace(/\n/g, '<br>')}</span>
+              </div>
             </div>
             
             <div class="section">
@@ -232,8 +240,8 @@ export const POST: APIRoute = async ({ request, params }) => {
         }
       }
     }
-
-     // Process colors data
+    
+    // Process colors data
      if (data.colors && data.color_descriptions) {
        const colorEntries = [];
        for (let i = 0; i < data.colors.length; i++) {
@@ -258,9 +266,34 @@ export const POST: APIRoute = async ({ request, params }) => {
      } else {
        data.tc_links_formatted = 'N/A';
      }
+     
+     // Ensure all required fields have default values
+     const requiredFields = {
+       requester_name: 'N/A',
+       country: 'N/A',
+       product: 'N/A',
+       flow_type: 'N/A',
+       carriers: 'N/A',
+       traffic_origin: 'N/A',
+       plan_type: 'N/A',
+       copies: 'N/A',
+       languages: 'N/A',
+       subscription_keywords: 'N/A',
+       price_text: 'N/A',
+       special_functionalities: 'N/A'
+     };
+     
+     // Apply defaults for missing fields
+     Object.keys(requiredFields).forEach(field => {
+       if (!data[field] || data[field] === '') {
+         data[field] = requiredFields[field];
+       }
+     });
+     
+
 
      // Process file information for display
-     ['banners', 'images', 'logos'].forEach(field => {
+      ['images', 'logos'].forEach(field => {
        if (files[field]) {
          if (Array.isArray(files[field])) {
            data[field] = (files[field] as File[]).map(f => f.name).join(', ');
@@ -315,7 +348,9 @@ export const POST: APIRoute = async ({ request, params }) => {
       return result;
     };
     
-    const devId = generateDevID();
+    // Determine if this is an update or new record
+    const isUpdate = data.operation_type === 'modify' && data.existing_devid;
+    const devId = isUpdate ? data.existing_devid : generateDevID();
 
     // Save request to MongoDB with timeout
     const mongoTimeout = new Promise((_, reject) => {
@@ -328,7 +363,6 @@ export const POST: APIRoute = async ({ request, params }) => {
         const requestDocument: RequestDocument = {
           devId,
           requesterName: data.requester_name,
-          jiraTaskUrl: data.jira_task_url,
           country: data.country,
           product: data.product,
           planType: data.plan_type,
@@ -340,16 +374,45 @@ export const POST: APIRoute = async ({ request, params }) => {
           trafficOrigin: data.traffic_origin,
           copies: data.copies,
           tcLinksFormatted: data.tc_links_formatted,
+          // Arrays originales para repoblar formulario
+          tcLinks: data.tc_links,
+          tcDescriptions: data.tc_descriptions,
+          colors: data.colors,
+          colorDescriptions: data.color_descriptions,
+          // Campos que faltaban
+          subscriptionKeywords: data.subscription_keywords,
+          priceText: data.price_text,
+          specialFunctionalities: data.special_functionalities,
+          referenceUrl: data.reference_url,
           languages: data.languages,
-          banners: data.banners,
           additionalImages: data.additional_images,
           logos: data.logos,
           landingFlow: data.landing_flow,
           specialFeatures: data.special_features
         };
         
-        await requestsCollection.insertOne(requestDocument);
-        return `Request ${devId} saved to MongoDB successfully`;
+        if (isUpdate) {
+          // Update existing record
+          const updateResult = await requestsCollection.updateOne(
+            { devId: devId },
+            { 
+              $set: {
+                ...requestDocument,
+                updatedAt: new Date()
+              }
+            }
+          );
+          
+          if (updateResult.matchedCount === 0) {
+            throw new Error(`No record found with DevID: ${devId}`);
+          }
+          
+          return `Request ${devId} updated in MongoDB successfully`;
+        } else {
+          // Insert new record
+          await requestsCollection.insertOne(requestDocument);
+          return `Request ${devId} saved to MongoDB successfully`;
+        }
       };
       
       const result = await Promise.race([mongoOperation(), mongoTimeout]);
@@ -377,6 +440,79 @@ export const POST: APIRoute = async ({ request, params }) => {
           },
         }
       );
+    }
+
+    // Create Jira task first to get issueKey
+    let issueKey = null;
+    try {
+      const jiraService = new JiraService();
+      if (jiraService.isConfigured()) {
+        console.log('Creating Jira task for DevID:', devId);
+        
+        const pdfBuffer = await generatePDF(data, devId, lang);
+        
+        // Define title prefix for Jira task
+        const titlePrefix = isUpdate ? '[UPDATE] ' : '[NEW] ';
+        
+        const issueData = {
+          devId: devId,
+          title: `${titlePrefix}${data.country} - ${data.product || 'N/A'} - ${data.requester_name}`,
+          description: `Brief request generated with DevID: ${devId}\n\nRequester: ${data.requester_name}\nCountry: ${data.country}\nProduct: ${data.product || 'N/A'}\n\nThis task was automatically created when the brief request was submitted.`,
+          requester: data.requester_name || 'Unknown',
+          country: data.country || 'Unknown',
+          product: data.product || 'Unknown'
+        };
+        
+        const imageFiles: { [key: string]: File } = {};
+        ['images', 'logos', 'reference_image', 'guidelines_document'].forEach(field => {
+          if (files[field]) {
+            if (Array.isArray(files[field])) {
+              (files[field] as File[]).forEach((file, index) => {
+                imageFiles[`${field}_${index}`] = file;
+              });
+            } else {
+              imageFiles[field] = files[field] as File;
+            }
+          }
+        });
+        
+        const issueResult = await jiraService.createIssueWithMultipleAttachments(
+          issueData,
+          pdfBuffer,
+          `${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}.pdf`,
+          imageFiles
+        );
+        
+        issueKey = issueResult.issueKey;
+        console.log('Jira task created successfully with PDF attachment:', issueKey);
+        
+        // Save Jira task key to database
+        if (issueKey) {
+          try {
+            const requestsCollection = await getRequestsCollection();
+            if (isUpdate) {
+              await requestsCollection.updateOne(
+                { devId },
+                { $set: { jiraTaskKey: issueKey, updatedAt: new Date() } }
+              );
+              console.log(`Jira task key ${issueKey} updated for DevID ${devId}`);
+            } else {
+              await requestsCollection.updateOne(
+                { devId },
+                { $set: { jiraTaskKey: issueKey } }
+              );
+              console.log(`Jira task key ${issueKey} saved for DevID ${devId}`);
+            }
+          } catch (dbError) {
+            console.error('Error saving Jira task key to database:', dbError);
+          }
+        }
+      } else {
+        console.log('Jira not configured, skipping task creation');
+      }
+    } catch (jiraError) {
+      console.error('Error creating Jira task (non-critical):', jiraError);
+      // Don't fail the entire request if Jira fails
     }
 
     // Create email content with translations
@@ -458,10 +594,6 @@ export const POST: APIRoute = async ({ request, params }) => {
             <div class="section">
               <h3>3. ${t.graphicResources}</h3>
               <div class="field">
-                <span class="label">${t.banners}:</span>
-                <div class="value">${data.banners && data.banners !== 'N/A' ? String(data.banners).replace(/\n/g, '<br>') : 'N/A'}</div>
-              </div>
-              <div class="field">
                 <span class="label">${t.images}:</span>
                 <div class="value">${data.images && data.images !== 'N/A' ? String(data.images).replace(/\n/g, '<br>') : 'N/A'}</div>
               </div>
@@ -510,10 +642,11 @@ export const POST: APIRoute = async ({ request, params }) => {
                 <span class="label">${t.requesterName}:</span>
                 <span class="value">${data.requester_name || 'N/A'}</span>
               </div>
+              ${issueKey ? `
               <div class="field">
-                <span class="label">${t.jiraTaskUrl}:</span>
-                <span class="value">${data.jira_task_url || 'N/A'}</span>
-              </div>
+                <span class="label">Jira Task:</span>
+                <span class="value"><a href="${process.env.JIRA_BASE_URL}/browse/${issueKey}" target="_blank">${issueKey}</a></span>
+              </div>` : ''}
             </div>
           </div>
           
@@ -524,8 +657,20 @@ export const POST: APIRoute = async ({ request, params }) => {
       </html>
     `;
 
+    // Generate PDF for email attachment
+    const pdfBuffer = await generatePDF(data, devId, lang);
+    
     // Prepare attachments
     const attachments = [];
+    
+    // Add PDF attachment
+    attachments.push({
+      filename: `LP_Brief_${devId}.pdf`,
+      content: pdfBuffer,
+      contentType: 'application/pdf'
+    });
+    
+    // Add other file attachments
     for (const [key, file] of Object.entries(files)) {
       if (file && file.size > 0) {
         const buffer = await file.arrayBuffer();
@@ -539,10 +684,11 @@ export const POST: APIRoute = async ({ request, params }) => {
 
     // Send email
     try {
+      const emailSubjectPrefix = isUpdate ? '[Modify] ' : '';
       await transporter.sendMail({
         from: EMAIL_CONFIG.auth.user,
         to: RECIPIENT_EMAIL,
-        subject: `Req: ${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}`,
+        subject: `${emailSubjectPrefix}Req: ${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}`,
         html: emailContent,
         attachments: attachments
       });
@@ -563,57 +709,7 @@ export const POST: APIRoute = async ({ request, params }) => {
       );
     }
 
-    // Generate PDF and create Jira task (optional - don't fail if Jira is not configured)
-    try {
-      const jiraService = new JiraService();
-      if (jiraService.isConfigured()) {
-        console.log('Creating Jira task for DevID:', devId);
-        
-        // Generate PDF content
-        const pdfBuffer = await generatePDF(data, devId, t);
-        
-        // Create Jira issue with PDF attachment
-        const issueData = {
-          devId: devId,
-          title: `${data.country} - ${data.product} - ${data.requester_name}`,
-          description: `Brief request generated with DevID: ${devId}\n\nRequester: ${data.requester_name}\nCountry: ${data.country}\nProduct: ${data.product}\n\nThis task was automatically created when the brief request was submitted.`,
-          requester: data.requester_name || 'Unknown',
-          country: data.country || 'Unknown',
-          product: data.product || 'Unknown'
-        };
-        
-        // Filter image files for Jira attachment
-        const imageFiles: { [key: string]: File } = {};
-        ['images', 'logos', 'reference_image', 'guidelines_document'].forEach(field => {
-          if (files[field]) {
-            if (Array.isArray(files[field])) {
-              // For multiple files, add each with a unique key
-              (files[field] as File[]).forEach((file, index) => {
-                imageFiles[`${field}_${index}`] = file;
-              });
-            } else {
-              imageFiles[field] = files[field] as File;
-            }
-          }
-        });
-        
-        const issueResult = await jiraService.createIssueWithMultipleAttachments(
-          issueData,
-          pdfBuffer,
-          `${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}.pdf`,
-          imageFiles
-        );
-        
-        const issueKey = issueResult.issueKey;
-        
-        console.log('Jira task created successfully with PDF attachment:', issueKey);
-      } else {
-        console.log('Jira not configured, skipping task creation');
-      }
-    } catch (jiraError) {
-      console.error('Error creating Jira task (non-critical):', jiraError);
-      // Don't fail the entire request if Jira fails
-    }
+    // Jira task creation was moved earlier in the process
 
     return new Response(
       JSON.stringify({

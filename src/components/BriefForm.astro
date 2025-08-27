@@ -19,12 +19,50 @@ const { translations: t, currentLang } = Astro.props;
         </p>
       </div>
       
+      <!-- Selector de Tipo de Operación -->
+      <section class="form-section scroll-animate no-counter">
+        <h2 class="section-title no-counter">{t.operationType}</h2>
+        <div class="form-group">
+          <div class="operation-type-selector">
+            <label class="radio-option">
+              <input type="radio" name="operation_type" value="new" id="operation-new" checked>
+              <span class="radio-label">{t.newLP}</span>
+            </label>
+            <label class="radio-option">
+              <input type="radio" name="operation_type" value="modify" id="operation-modify">
+              <span class="radio-label">{t.modifyLP}</span>
+            </label>
+          </div>
+        </div>
+      </section>
+      
+      <!-- Campo DevID para Modificar LP -->
+      <section class="form-section scroll-animate no-counter" id="devid-section" style="display: none;">
+        <div class="form-group">
+          <label for="existing_devid" class="form-label">{t.existingDevId}:</label>
+          <div class="devid-input-group">
+            <input type="text" id="existing_devid" name="existing_devid" class="form-input" placeholder={t.existingDevIdPlaceholder}>
+            <button type="button" id="load-data-btn" class="btn-secondary">{t.loadExistingData}</button>
+          </div>
+          <div id="devid-status" class="devid-status"></div>
+        </div>
+      </section>
+      
+      <!-- Contenedor del Formulario Principal -->
+      <div id="main-form-container">
+      
       <!-- Información del Solicitante -->
       <section class="form-section scroll-animate no-counter">
         <h2 class="section-title no-counter">{t.applicantInfo}</h2>
         <div class="form-group">
           <label for="requester_name" class="form-label">{t.requesterName}:</label>
           <input type="text" id="requester_name" name="requester_name" class="form-input" placeholder={t.requesterNamePlaceholder} required>
+        </div>
+        
+        <!-- Campo para mostrar Jira Task Key (solo lectura) -->
+        <div class="form-group" id="jira-task-key-group" style="display: none;">
+          <label for="jira_task_key" class="form-label">Jira Task:</label>
+          <input type="text" id="jira_task_key" name="jira_task_key" class="form-input" readonly style="background-color: #f5f5f5; cursor: not-allowed;">
         </div>
 
       </section>
@@ -201,6 +239,8 @@ const { translations: t, currentLang } = Astro.props;
         </p>
       </div>
 
+      </div> <!-- Cierre del contenedor del formulario principal -->
+      
       <!-- Submit Button -->
       <div class="form-actions scroll-animate">
         <button type="submit" class="btn btn-primary" id="submitBtn">
@@ -314,6 +354,119 @@ const { translations: t, currentLang } = Astro.props;
   .form-section:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(139, 69, 219, 0.2);
+  }
+
+  /* Operation Type Selector Styles */
+  .operation-selector {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    margin-bottom: 2rem;
+  }
+
+  .operation-selector h3 {
+    color: white;
+    margin-bottom: 1rem;
+  }
+
+  .radio-group {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+  }
+
+  .radio-option {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.75rem 1.5rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: 2px solid transparent;
+  }
+
+  .radio-option:hover {
+    background: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+  }
+
+  .radio-option input[type="radio"]:checked + label {
+    font-weight: bold;
+  }
+
+  .radio-option:has(input[type="radio"]:checked) {
+    background: rgba(255, 255, 255, 0.3);
+    border-color: rgba(255, 255, 255, 0.5);
+  }
+
+  /* DevID Section Styles */
+  .devid-section {
+    background: linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%);
+    border-left-color: #f59e0b;
+  }
+
+  .devid-input-group {
+    display: flex;
+    gap: 1rem;
+    align-items: flex-end;
+  }
+
+  .devid-input-group .form-group {
+    flex: 1;
+    margin-bottom: 0;
+  }
+
+  .load-btn {
+    background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%);
+    color: white;
+    border: none;
+    padding: 0.75rem 1.5rem;
+    border-radius: 10px;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+  }
+
+  .load-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+  }
+
+  .load-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+  }
+
+  /* DevID Status Styles */
+  .devid-status {
+    margin-top: 1rem;
+    padding: 0.75rem;
+    border-radius: 8px;
+    font-weight: 500;
+    text-align: center;
+  }
+
+  .devid-status.success {
+    background: #d1fae5;
+    color: #065f46;
+    border: 1px solid #a7f3d0;
+  }
+
+  .devid-status.error {
+    background: #fee2e2;
+    color: #991b1b;
+    border: 1px solid #fca5a5;
+  }
+
+  .devid-status.loading {
+    background: #dbeafe;
+    color: #1e40af;
+    border: 1px solid #93c5fd;
+  }
     border-left-color: #a855f7;
   }
 
@@ -1221,6 +1374,226 @@ const { translations: t, currentLang } = Astro.props;
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 
 <script define:vars={{ t, currentLang }}>
+  // Operation Type Handler
+  document.addEventListener('DOMContentLoaded', function() {
+    const operationRadios = document.querySelectorAll('input[name="operation_type"]');
+    const devIdSection = document.getElementById('devid-section');
+    const mainFormContainer = document.getElementById('main-form-container');
+    const loadDataBtn = document.getElementById('load-data-btn');
+    const existingDevIdInput = document.getElementById('existing_devid');
+    const devIdStatus = document.getElementById('devid-status');
+    
+    // Handle operation type change
+    if (operationRadios.length > 0) {
+      operationRadios.forEach(radio => {
+        radio.addEventListener('change', function() {
+          if (this.value === 'modify') {
+            if (devIdSection) devIdSection.style.display = 'block';
+            if (mainFormContainer) mainFormContainer.style.display = 'none';
+          } else {
+            if (devIdSection) devIdSection.style.display = 'none';
+            if (mainFormContainer) mainFormContainer.style.display = 'block';
+            clearForm();
+          }
+        });
+      });
+    }
+    
+    // Handle load existing data
+    if (loadDataBtn && existingDevIdInput) {
+      loadDataBtn.addEventListener('click', async function() {
+        const devId = existingDevIdInput.value.trim();
+        if (!devId) {
+          showDevIdStatus(t.existingDevIdPlaceholder, 'error');
+          return;
+        }
+      
+      showDevIdStatus(t.loadingData, 'loading');
+      
+      try {
+        const response = await fetch(`/${currentLang}/api/get-brief?devId=${encodeURIComponent(devId)}`);
+        const result = await response.json();
+        
+        if (result.success && result.data) {
+          populateForm(result.data);
+          mainFormContainer.style.display = 'block';
+          showDevIdStatus('Datos cargados correctamente', 'success');
+        } else {
+          showDevIdStatus(t.devIdNotFound, 'error');
+        }
+      } catch (error) {
+          console.error('Error loading data:', error);
+          showDevIdStatus('Error al cargar los datos', 'error');
+        }
+      });
+    }
+    
+    function showDevIdStatus(message, type) {
+      if (devIdStatus) {
+        devIdStatus.textContent = message;
+        devIdStatus.className = `devid-status ${type}`;
+      }
+    }
+    
+    function clearForm() {
+      const form = document.getElementById('briefForm');
+      const inputs = form.querySelectorAll('input:not([name="operation_type"]), textarea, select');
+      inputs.forEach(input => {
+        if (input.type === 'checkbox' || input.type === 'radio') {
+          input.checked = false;
+        } else {
+          input.value = '';
+        }
+      });
+    }
+    
+    function populateForm(data) {
+      if (!data) return;
+      
+      console.log('Populating form with data:', data);
+      
+      // Field mapping from database (camelCase) to form (snake_case)
+      const fieldMapping = {
+        'devId': 'existing_devid',
+        'requesterName': 'requester_name',
+        'jiraTaskUrl': 'jira_task_url',
+        'jiraTaskKey': 'jira_task_key',
+        'planType': 'plan_type',
+        'maxiApproval': 'maxi_approval',
+        'flowType': 'flow_type',
+        'trafficOrigin': 'traffic_origin',
+        'tcLinksFormatted': 'tc_links_formatted',
+        'additionalImages': 'additional_images',
+        'landingFlow': 'landing_flow',
+        'specialFeatures': 'special_features',
+        'subscriptionKeywords': 'subscription_keywords',
+        'priceText': 'price_text',
+        'specialFunctionalities': 'special_functionalities',
+        'referenceUrl': 'reference_url'
+      };
+      
+      // Process direct field mappings
+      Object.keys(data).forEach(dbKey => {
+        const formKey = fieldMapping[dbKey] || dbKey;
+        const element = document.querySelector(`[name="${formKey}"]`);
+        
+        if (element) {
+          try {
+            console.log(`Setting ${formKey} (from ${dbKey}) = ${data[dbKey]} on element:`, element.tagName, element.type);
+            if (element.type === 'checkbox' || element.type === 'radio') {
+              element.checked = data[dbKey];
+            } else if (element.tagName === 'SELECT') {
+              // For select elements, ensure the value exists as an option
+              const value = data[dbKey] || '';
+              const optionExists = Array.from(element.options).some(option => option.value === value);
+              if (optionExists || value === '') {
+                element.value = value;
+                console.log(`Successfully set select ${formKey} to ${value}`);
+              } else {
+                console.warn(`Option '${value}' not found for select ${formKey}. Available options:`, Array.from(element.options).map(o => o.value));
+                element.value = ''; // Reset to default
+              }
+            } else {
+              element.value = data[dbKey] || '';
+            }
+          } catch (error) {
+            console.warn(`Error setting value for ${formKey}:`, error);
+          }
+        } else {
+          console.warn(`Element not found for field: ${formKey} (from ${dbKey})`);
+        }
+      });
+      
+      // Handle array fields
+      if (data.tcLinks && data.tcDescriptions) {
+        populateArrayFields('tc_links', data.tcLinks, data.tcDescriptions);
+      }
+      if (data.colors && data.colorDescriptions) {
+        populateArrayFields('colors', data.colors, data.colorDescriptions);
+      }
+    }
+    
+    function populateArrayFields(fieldType, values, descriptions) {
+      if (fieldType === 'tc_links') {
+        const container = document.getElementById('tc-links-container');
+        if (!container) return;
+        
+        // Clear existing items except the first one
+        const items = container.querySelectorAll('.tc-link-item');
+        for (let i = 1; i < items.length; i++) {
+          items[i].remove();
+        }
+        
+        // Populate data
+        const valuesArray = Array.isArray(values) ? values : (values ? values.split(',') : []);
+        const descriptionsArray = Array.isArray(descriptions) ? descriptions : (descriptions ? descriptions.split(',') : []);
+        
+        for (let i = 0; i < valuesArray.length; i++) {
+          if (i === 0) {
+            // Use first existing item
+            const firstItem = container.querySelector('.tc-link-item');
+            if (firstItem) {
+              const urlInput = firstItem.querySelector('input[name="tc_links[]"]');
+              const descInput = firstItem.querySelector('input[name="tc_descriptions[]"]');
+              if (urlInput) urlInput.value = valuesArray[i] || '';
+              if (descInput) descInput.value = descriptionsArray[i] || '';
+            }
+          } else {
+            // Add new items
+            window.addTcLink();
+            const newItem = container.lastElementChild;
+            const urlInput = newItem.querySelector('input[name="tc_links[]"]');
+            const descInput = newItem.querySelector('input[name="tc_descriptions[]"]');
+            if (urlInput) urlInput.value = valuesArray[i] || '';
+            if (descInput) descInput.value = descriptionsArray[i] || '';
+          }
+        }
+      } else if (fieldType === 'colors') {
+        const container = document.getElementById('colors-container');
+        if (!container) return;
+        
+        // Clear existing items except the first one
+        const items = container.querySelectorAll('.color-item');
+        for (let i = 1; i < items.length; i++) {
+          items[i].remove();
+        }
+        
+        // Populate data
+        const valuesArray = Array.isArray(values) ? values : (values ? values.split(',') : []);
+        const descriptionsArray = Array.isArray(descriptions) ? descriptions : (descriptions ? descriptions.split(',') : []);
+        
+        for (let i = 0; i < valuesArray.length; i++) {
+          if (i === 0) {
+            // Use first existing item
+            const firstItem = container.querySelector('.color-item');
+            if (firstItem) {
+              const colorInput = firstItem.querySelector('input[name="colors[]"]');
+              const descInput = firstItem.querySelector('input[name="color_descriptions[]"]');
+              if (colorInput) colorInput.value = valuesArray[i] || '#000000';
+              if (descInput) descInput.value = descriptionsArray[i] || '';
+            }
+          } else {
+            // Add new items
+            window.addColor();
+            const newItem = container.lastElementChild;
+            const colorInput = newItem.querySelector('input[name="colors[]"]');
+            const descInput = newItem.querySelector('input[name="color_descriptions[]"]');
+            if (colorInput) colorInput.value = valuesArray[i] || '#000000';
+            if (descInput) descInput.value = descriptionsArray[i] || '';
+          }
+        }
+      }
+    }
+    
+    // Mostrar campo Jira Task Key si existe
+    if (data.jiraTaskKey) {
+      const jiraTaskKeyGroup = document.getElementById('jira-task-key-group');
+      if (jiraTaskKeyGroup) {
+        jiraTaskKeyGroup.style.display = 'block';
+      }
+    }
+  });
+  
   // PDF Generation function
   async function generateAndDownloadPDF(briefData, devId) {
     try {

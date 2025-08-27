@@ -4,6 +4,16 @@ export interface Translations {
   subtitle: string;
   languageSelector: string;
   
+  // Operation type
+  operationType: string;
+  newLP: string;
+  modifyLP: string;
+  existingDevId: string;
+  existingDevIdPlaceholder: string;
+  loadExistingData: string;
+  devIdNotFound: string;
+  loadingData: string;
+  
   // Form sections
   maxiApproval: string;
   adminApproval: string;

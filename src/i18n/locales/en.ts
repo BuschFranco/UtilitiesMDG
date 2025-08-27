@@ -6,6 +6,16 @@ const en: Translations = {
   subtitle: 'Generate a landing page development request',
   languageSelector: 'Language',
   
+  // Operation type
+  operationType: 'Operation Type',
+  newLP: 'New LP',
+  modifyLP: 'Modify LP',
+  existingDevId: 'Existing DevID',
+  existingDevIdPlaceholder: 'Enter the DevID of the LP to modify',
+  loadExistingData: 'Load Data',
+  devIdNotFound: 'DevID not found',
+  loadingData: 'Loading data...',
+  
   // Form sections
   maxiApproval: 'Maxi\'s Approval',
   adminApproval: 'Maxi\'s Approval',
