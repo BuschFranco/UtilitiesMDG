@@ -45,29 +45,9 @@ async function generatePDF(data: any, devId: string, t: any): Promise<Buffer> {
   try {
     const page = await browser.newPage();
     
-    // Process colors data
-    let colorsFormatted = 'N/A';
-    if (data.colors && data.color_descriptions) {
-      const colorEntries = [];
-      for (let i = 0; i < data.colors.length; i++) {
-        if (data.colors[i] && data.color_descriptions[i]) {
-          colorEntries.push(`${data.colors[i]} - ${data.color_descriptions[i]}`);
-        }
-      }
-      colorsFormatted = colorEntries.length > 0 ? colorEntries.join(', ') : 'N/A';
-    }
-
-    // Process TC links data
-    let tcLinksFormatted = 'N/A';
-    if (data.tc_links && data.tc_descriptions) {
-      const tcEntries = [];
-      for (let i = 0; i < data.tc_links.length; i++) {
-        if (data.tc_links[i] && data.tc_descriptions[i]) {
-          tcEntries.push(`${data.tc_descriptions[i]}: ${data.tc_links[i]}`);
-        }
-      }
-      tcLinksFormatted = tcEntries.length > 0 ? tcEntries.join(', ') : 'N/A';
-    }
+    // Use already processed formatted data
+    const colorsFormatted = data.colors_formatted || 'N/A';
+    const tcLinksFormatted = data.tc_links_formatted || 'N/A';
     
     const htmlContent = `
       <!DOCTYPE html>
@@ -419,6 +399,44 @@ export const POST: APIRoute = async ({ request, params }) => {
       // Continue with email sending even if MongoDB fails
     }
 
+    // Process and format data after MongoDB operation
+    // Format colors
+    if (data.colors && Array.isArray(data.colors) && data.color_descriptions && Array.isArray(data.color_descriptions)) {
+      const colorPairs = data.colors.map((color: string, index: number) => {
+        const description = data.color_descriptions[index] || '';
+        return description ? `${color}: ${description}` : color;
+      }).filter(Boolean);
+      data.colors_formatted = colorPairs.length > 0 ? colorPairs.join('<br>') : 'N/A';
+    } else {
+      data.colors_formatted = 'N/A';
+    }
+
+    // Format T&C links
+    if (data.tc_links && Array.isArray(data.tc_links) && data.tc_descriptions && Array.isArray(data.tc_descriptions)) {
+      const tcPairs = data.tc_links.map((link: string, index: number) => {
+        const description = data.tc_descriptions[index] || '';
+        return description ? `${description}: ${link}` : link;
+      }).filter(Boolean);
+      data.tc_links_formatted = tcPairs.length > 0 ? tcPairs.join('<br>') : 'N/A';
+    } else {
+      data.tc_links_formatted = 'N/A';
+    }
+
+    // Default values already applied earlier in the process
+
+    // Process file names for display
+    ['images', 'logos', 'reference_image', 'guidelines_document'].forEach(field => {
+      if (files[field]) {
+        if (Array.isArray(files[field])) {
+          data[field] = (files[field] as File[]).map(file => file.name).join(', ');
+        } else {
+          data[field] = (files[field] as File).name;
+        }
+      } else {
+        data[field] = 'N/A';
+      }
+    });
+
     // Email configuration
     let transporter;
     try {
@@ -446,7 +464,7 @@ export const POST: APIRoute = async ({ request, params }) => {
       if (jiraService.isConfigured()) {
         console.log('Creating Jira task for DevID:', devId);
         
-        const pdfBuffer = await generatePDF(data, devId, lang);
+        const pdfBuffer = await generatePDF(data, devId, t);
         
         // Define title prefix for Jira task
         const titlePrefix = isUpdate ? '[MODIFY] ' : '[NEW] ';
@@ -655,7 +673,7 @@ export const POST: APIRoute = async ({ request, params }) => {
     `;
 
     // Generate PDF for email attachment
-    const pdfBuffer = await generatePDF(data, devId, lang);
+    const pdfBuffer = await generatePDF(data, devId, t);
     
     // Prepare attachments
     const attachments = [];
