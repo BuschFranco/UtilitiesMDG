@@ -28,14 +28,14 @@ const en: Translations = {
   carriers: 'Carriers',
   trafficOrigin: 'Traffic Origin',
   copies: 'Copies and Texts',
-  tcLinks: 'Terms and Conditions Links',
+  tcLinks: 'Links',
   languages: 'Languages',
-  banners: 'Banners',
   images: 'Images',
   logos: 'Logos',
   flowType: 'Flow Type',
   specialFunctionalities: 'Special Functionalities',
   technologyType: 'Technology Type',
+  trafficSource: 'Traffic Source',
   newTechnology: 'New Technology',
   oldTechnology: 'Old Technology (mobi)',
   oldTechWarning: '⚠️ Old technology has a longer development timeline and may be subject to visual limitations',
@@ -55,7 +55,7 @@ const en: Translations = {
   contactJuli: 'Contact Juli',
   
   requesterName: 'Requester Name',
-  jiraTaskUrl: 'Jira Task URL (Generate one if not available)',
+
   planType: 'Plan Type',
   links: 'Links',
   linkDescription: 'Link Description',
@@ -81,7 +81,6 @@ const en: Translations = {
   copiesPlaceholder: '• Terms and Conditions: "By subscribing..."\n• MSISDN Button: "CONTINUE"\n• PIN Button: "SUBSCRIBE"\n• Main Title: ".."\n• Subtitles: ".."',
   tcLinksPlaceholder: 'Include all Terms and Conditions and legal links...',
   languagesPlaceholder: 'e.g., English, Spanish, French...',
-  bannersPlaceholder: 'Describe banner requirements, sizes and specifications...',
   imagesPlaceholder: 'Describe image requirements, product shots, backgrounds...',
   logosPlaceholder: 'Specify logos needed, brand guidelines, and usage...',
   flowTypePlaceholder: 'Select the main conversion flow type',
@@ -103,13 +102,13 @@ const en: Translations = {
   },
   
   // Buttons and actions
-  devIdInfo: 'When generating the request, a document with a Dev ID will be created that you must attach to the same Jira task you entered <a href="#jira_task_url" class="jira-link">above</a>.',
+
   francoNotification: 'This information will be sent to Franco (franco@mediadigitalgroup.com)',
   generateBrief: 'Generate Request',
   generating: 'Generating...',
   
   // Messages
-  successMessage: 'Request generated successfully! A PDF will be downloaded that you must attach to the Jira Task.',
+  successMessage: 'Request generated successfully! A PDF will be downloaded with the request information.',
   errorMessage: 'Error generating brief. Please try again.',
   fillAllFields: 'Please fill in all required fields.',
   

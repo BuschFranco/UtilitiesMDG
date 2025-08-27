@@ -28,14 +28,14 @@ const es: Translations = {
   carriers: 'Operadoras',
   trafficOrigin: 'Origen del Tráfico',
   copies: 'Textos y Copys',
-  tcLinks: 'Enlaces de Términos y Condiciones',
+  tcLinks: 'Enlaces',
   languages: 'Idiomas',
-  banners: 'Banners',
   images: 'Imágenes',
   logos: 'Logos',
   flowType: 'Tipo de Flujo',
   specialFunctionalities: 'Funcionalidades Especiales',
   technologyType: 'Tipo de Tecnología',
+  trafficSource: 'Origen del Tráfico',
   newTechnology: 'Nueva Tecnología',
   oldTechnology: 'Vieja Tecnología (mobi)',
   oldTechWarning: '⚠️ La tecnología vieja tiene un plazo de desarrollo más largo y puede estar condicionada a limitaciones visuales',
@@ -54,7 +54,7 @@ const es: Translations = {
   juliNote: "Nota: Si no tienes los recursos gráficos necesarios para la landing, por favor contacta a Juli para obtener asistencia.",
   contactJuli: "Contactar Juli",
   requesterName: 'Nombre del Solicitante',
-  jiraTaskUrl: 'URL de la Task de Jira (Generar una en caso de no tener)',
+
   planType: 'Tipo de Plan',
   links: 'Enlaces',
   linkDescription: 'Descripción del enlace',
@@ -80,13 +80,12 @@ const es: Translations = {
   copiesPlaceholder: '• Términos y Condiciones: "Al suscribirte..."\n• Botón MSISDN: "CONTINUAR"\n• Botón PIN: "SUSCRIBIRSE"\n• Título principal: ".."\n• Subtítulos: ".."',
   tcLinksPlaceholder: 'Incluye todos los enlaces de Términos y Condiciones y legales...',
   languagesPlaceholder: 'ej., Inglés, Español, Francés...',
-  bannersPlaceholder: 'Describe los requisitos de banners, tamaños y especificaciones...',
   imagesPlaceholder: 'Describe los requisitos de imágenes, fotos de producto, fondos...',
   logosPlaceholder: 'Especifica los logos necesarios, guías de marca y uso...',
   flowTypePlaceholder: 'Selecciona el tipo de flujo de conversión principal',
   specialFunctionalitiesPlaceholder: 'Ej: Click en el botón al cliquear toda la landing, autoclick luego de 5 segundos, checkbox prefill, etc',
   requesterNamePlaceholder: 'Ingrese su nombre completo',
-  jiraTaskUrlPlaceholder: 'Ingrese la URL de la task de Jira',
+
   linkDescriptionPlaceholder: 'Ej: Licencias',
   subscriptionKeywordsPlaceholder: 'Ej: STOP to 9521, CLP to 9522',
   priceTextPlaceholder: 'Ej: 1.5 EUR/Day (VAT Inclusive)',
@@ -103,13 +102,13 @@ const es: Translations = {
   },
   
   // Buttons and actions
-  devIdInfo: 'Al generar la solicitud se creará un documento con un Dev ID que deberás adjuntar a la misma tarea de Jira que introdujiste <a href="#jira_task_url" class="jira-link">arriba</a>.',
+
   francoNotification: 'Esta información se enviará a Franco (franco@mediadigitalgroup.com)',
   generateBrief: 'Generar Solicitud',
   generating: 'Generando...',
   
   // Messages
-  successMessage: '¡Solicitud generada exitosamente! Se descargará un PDF que deberás adjuntar al Jira Task',
+  successMessage: '¡Solicitud generada exitosamente! Se descargará un PDF con la información de la solicitud',
   errorMessage: 'Error al generar la solicitud. Por favor intenta de nuevo.',
   fillAllFields: 'Por favor completa todos los campos requeridos.',
   

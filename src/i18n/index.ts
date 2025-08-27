@@ -6,12 +6,16 @@ export interface Translations {
   
   // Form sections
   maxiApproval: string;
+  adminApproval: string;
   campaignInfo: string;
+  basicInfo: string;
   landingInfo: string;
+  landingPageInfo: string;
   contentCopies: string;
   graphicResources: string;
   technicalFunctionalities: string;
   applicantInfo: string;
+  requesterInfo: string;
   references: string;
   colors: string;
   formInfoBanner: string;
@@ -24,7 +28,6 @@ export interface Translations {
   copies: string;
   tcLinks: string;
   languages: string;
-  banners: string;
   images: string;
   logos: string;
   flowType: string;
@@ -32,6 +35,9 @@ export interface Translations {
   requesterName: string;
   planType: string;
   links: string;
+  trafficSource: string;
+
+  technologyType: string;
   linkDescription: string;
   subscriptionKeywords: string;
   priceText: string;
@@ -55,7 +61,6 @@ export interface Translations {
   copiesPlaceholder: string;
   tcLinksPlaceholder: string;
   languagesPlaceholder: string;
-  bannersPlaceholder: string;
   imagesPlaceholder: string;
   logosPlaceholder: string;
   flowTypePlaceholder: string;
@@ -79,6 +84,8 @@ export interface Translations {
   // Buttons and actions
   generateBrief: string;
   generating: string;
+
+  francoNotification: string;
   
   // Messages
   successMessage: string;

@@ -159,6 +159,29 @@ class JiraService {
       throw error;
     }
   }
+
+  async createIssueWithMultipleAttachments(issueData: JiraIssueData, pdfBuffer: Buffer, pdfFileName: string, imageFiles: { [key: string]: File }): Promise<{ issueKey: string; issueId: string }> {
+    try {
+      // First, create the issue
+      const issueResult = await this.createIssue(issueData);
+      
+      // Attach the PDF
+      await this.attachFile(issueResult.issueKey, pdfBuffer, pdfFileName);
+      
+      // Attach all image files
+      for (const [fieldName, file] of Object.entries(imageFiles)) {
+        if (file && file.size > 0) {
+          const buffer = Buffer.from(await file.arrayBuffer());
+          await this.attachFile(issueResult.issueKey, buffer, file.name);
+        }
+      }
+      
+      return issueResult;
+    } catch (error) {
+      console.error('Error creating Jira issue with multiple attachments:', error);
+      throw error;
+    }
+  }
 }
 
 export default JiraService;

@@ -81,7 +81,7 @@ export async function getRequestsCollection(): Promise<Collection> {
 export interface RequestDocument {
   devId: string;
   requesterName: string;
-  jiraTaskUrl: string;
+
   country: string;
   product: string;
   planType: string;

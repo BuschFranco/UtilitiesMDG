@@ -57,15 +57,12 @@ export const POST: APIRoute = async ({ request, params }) => {
         trafficSource: t.trafficSource,
         copies: t.copies,
         tcLinks: t.tcLinks,
-        multilanguage: t.multilanguage,
-        banners: t.banners,
         images: t.images,
         logos: t.logos,
-        landingFlow: t.landingFlow,
         specialFunctionalities: t.specialFunctionalities,
         colors: t.colors,
         requesterName: t.requesterName,
-        jiraTaskUrl: t.jiraTaskUrl,
+
         generateRequest: t.generateRequest
       }
     };

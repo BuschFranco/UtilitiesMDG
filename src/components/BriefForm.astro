@@ -26,10 +26,7 @@ const { translations: t, currentLang } = Astro.props;
           <label for="requester_name" class="form-label">{t.requesterName}:</label>
           <input type="text" id="requester_name" name="requester_name" class="form-input" placeholder={t.requesterNamePlaceholder} required>
         </div>
-        <div class="form-group">
-          <label for="jira_task_url" class="form-label">{t.jiraTaskUrl}:</label>
-          <input type="url" id="jira_task_url" name="jira_task_url" class="form-input" placeholder={t.jiraTaskUrlPlaceholder} required>
-        </div>
+
       </section>
 
 
@@ -195,12 +192,7 @@ const { translations: t, currentLang } = Astro.props;
         </div>
       </section>
 
-      <!-- Dev ID Information -->
-      <div class="dev-id-info scroll-animate">
-        <p class="dev-id-text">
-          💡 <span set:html={t.devIdInfo}></span>
-        </p>
-      </div>
+
 
       <!-- Franco Notification -->
       <div class="franco-notification scroll-animate">
@@ -1295,19 +1287,19 @@ const { translations: t, currentLang } = Astro.props;
       
       // Add form data
       addText(t.requesterName, briefData.requester_name || 'N/A');
-      addText(t.jiraTaskUrl, briefData.jira_task_url || 'N/A');
+
       addText(t.country, briefData.country || 'N/A');
       addText(t.carriers, briefData.carriers || 'N/A');
       addText(t.product, briefData.product || 'N/A');
       addText(t.flowType, briefData.flow_type || 'N/A');
       addText(t.trafficOrigin, briefData.traffic_origin || 'N/A');
-      addText('Plan Type', briefData.plan_type || 'N/A');
+      addText(t.planType, briefData.plan_type || 'N/A');
       addText(t.copies, briefData.copies || 'N/A', true);
-      addText(t.tcLinks, briefData.tc_links || 'N/A');
+      addText(t.tcLinks, briefData.tc_links_formatted || 'N/A');
       addText(t.languages, briefData.languages || 'N/A');
-      addText('Subscription Keywords', briefData.subscription_keywords || 'N/A');
-      addText('Price Text', briefData.price_text || 'N/A');
-      addText(t.banners, briefData.banners || 'N/A', true);
+      addText(t.subscriptionKeywords, briefData.subscription_keywords || 'N/A');
+      addText(t.priceText, briefData.price_text || 'N/A');
+
       addText(t.images, briefData.images || 'N/A', true);
       addText(t.logos, briefData.logos || 'N/A', true);
 

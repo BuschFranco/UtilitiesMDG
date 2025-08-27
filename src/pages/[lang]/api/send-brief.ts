@@ -96,15 +96,7 @@ async function generatePDF(data: any, devId: string, t: any): Promise<Buffer> {
           
           <div class="content">
             <div class="section">
-              <h3>1. ${t.adminApproval}</h3>
-              <div class="field">
-                <span class="label">${t.adminApproval}:</span>
-                <span class="value">${data.admin_approval || 'N/A'}</span>
-              </div>
-            </div>
-            
-            <div class="section">
-              <h3>2. ${t.basicInfo}</h3>
+              <h3>1. ${t.basicInfo}</h3>
               <div class="field">
                 <span class="label">${t.country}:</span>
                 <span class="value">${data.country || 'N/A'}</span>
@@ -120,39 +112,35 @@ async function generatePDF(data: any, devId: string, t: any): Promise<Buffer> {
             </div>
             
             <div class="section">
-              <h3>3. ${t.landingPageInfo}</h3>
+              <h3>2. ${t.landingPageInfo}</h3>
               <div class="field">
                 <span class="label">${t.flowType}:</span>
                 <span class="value">${data.flow_type || 'N/A'}</span>
               </div>
               <div class="field">
                 <span class="label">${t.trafficSource}:</span>
-                <span class="value">${Array.isArray(data.traffic_source) ? data.traffic_source.join(', ') : (data.traffic_source || 'N/A')}</span>
+                <span class="value">${data.traffic_origin || 'N/A'}</span>
               </div>
             </div>
             
             <div class="section">
-              <h3>4. ${t.contentCopies}</h3>
+              <h3>3. ${t.contentCopies}</h3>
               <div class="field">
                 <span class="label">${t.copies}:</span>
                 <span class="value">${String(data.copies || 'N/A').replace(/\n/g, '<br>')}</span>
               </div>
               <div class="field">
-                <span class="label">${t.tcLinks}:</span>
+                <span class="label">${t.links}:</span>
                 <span class="value">${tcLinksFormatted}</span>
               </div>
               <div class="field">
-                <span class="label">${t.multilanguage}:</span>
-                <span class="value">${data.multilanguage || 'N/A'}</span>
+                <span class="label">${t.languageSelector}:</span>
+                <span class="value">${data.languages || 'N/A'}</span>
               </div>
             </div>
             
             <div class="section">
-              <h3>5. ${t.graphicResources}</h3>
-              <div class="field">
-                <span class="label">${t.banners}:</span>
-                <span class="value">${String(data.banners || 'N/A').replace(/\n/g, '<br>')}</span>
-              </div>
+              <h3>4. ${t.graphicResources}</h3>
               <div class="field">
                 <span class="label">${t.images}:</span>
                 <span class="value">${String(data.images || 'N/A').replace(/\n/g, '<br>')}</span>
@@ -168,11 +156,7 @@ async function generatePDF(data: any, devId: string, t: any): Promise<Buffer> {
             </div>
             
             <div class="section">
-              <h3>6. ${t.technicalFunctionalities}</h3>
-              <div class="field">
-                <span class="label">${t.landingFlow}:</span>
-                <span class="value">${data.landing_flow || 'N/A'}</span>
-              </div>
+              <h3>5. ${t.technicalFunctionalities}</h3>
               <div class="field">
                 <span class="label">${t.specialFunctionalities}:</span>
                 <span class="value">${String(data.special_functionalities || 'N/A').replace(/\n/g, '<br>')}</span>
@@ -180,15 +164,12 @@ async function generatePDF(data: any, devId: string, t: any): Promise<Buffer> {
             </div>
             
             <div class="section">
-              <h3>7. ${t.requesterInfo}</h3>
+              <h3>6. ${t.requesterInfo}</h3>
               <div class="field">
                 <span class="label">${t.requesterName}:</span>
                 <span class="value">${data.requester_name || 'N/A'}</span>
               </div>
-              <div class="field">
-                <span class="label">${t.jiraTaskUrl}:</span>
-                <span class="value">${data.jira_task_url || 'N/A'}</span>
-              </div>
+
             </div>
           </div>
           
@@ -225,11 +206,20 @@ export const POST: APIRoute = async ({ request, params }) => {
     
     // Convert FormData to object
     const data: any = {};
-    const files: { [key: string]: File } = {};
+    const files: { [key: string]: File | File[] } = {};
     
     for (const [key, value] of formData.entries()) {
       if (value instanceof File) {
-        files[key] = value;
+        // Handle multiple files for the same field
+        if (files[key]) {
+          if (Array.isArray(files[key])) {
+            (files[key] as File[]).push(value);
+          } else {
+            files[key] = [files[key] as File, value];
+          }
+        } else {
+          files[key] = value;
+        }
       } else {
         if (key.endsWith('[]')) {
           const cleanKey = key.replace('[]', '');
@@ -272,7 +262,11 @@ export const POST: APIRoute = async ({ request, params }) => {
      // Process file information for display
      ['banners', 'images', 'logos'].forEach(field => {
        if (files[field]) {
-         data[field] = files[field].name;
+         if (Array.isArray(files[field])) {
+           data[field] = (files[field] as File[]).map(f => f.name).join(', ');
+         } else {
+           data[field] = (files[field] as File).name;
+         }
        } else {
          data[field] = 'N/A';
        }
@@ -280,7 +274,11 @@ export const POST: APIRoute = async ({ request, params }) => {
 
      ['reference_image', 'guidelines_document'].forEach(field => {
        if (files[field]) {
-         data[field] = files[field].name;
+         if (Array.isArray(files[field])) {
+           data[field] = (files[field] as File[]).map(f => f.name).join(', ');
+         } else {
+           data[field] = (files[field] as File).name;
+         }
        } else {
          data[field] = 'N/A';
        }
@@ -424,11 +422,11 @@ export const POST: APIRoute = async ({ request, params }) => {
                 <span class="value">${data.flow_type || 'N/A'}</span>
               </div>
               <div class="field">
-                <span class="label">${t.trafficOrigin}:</span>
+                <span class="label">${t.trafficSource}:</span>
                 <span class="value">${data.traffic_origin || 'N/A'}</span>
               </div>
               <div class="field">
-                <span class="label">Plan Type:</span>
+                <span class="label">${t.planType}:</span>
                 <span class="value">${data.plan_type || 'N/A'}</span>
               </div>
             </div>
@@ -448,11 +446,11 @@ export const POST: APIRoute = async ({ request, params }) => {
                 <span class="value">${data.languages || 'N/A'}</span>
               </div>
               <div class="field">
-                <span class="label">Subscription Keywords:</span>
+                <span class="label">${t.subscriptionKeywords}:</span>
                 <span class="value">${data.subscription_keywords || 'N/A'}</span>
               </div>
               <div class="field">
-                <span class="label">Price Text:</span>
+                <span class="label">${t.priceText}:</span>
                 <span class="value">${data.price_text || 'N/A'}</span>
               </div>
             </div>
@@ -575,15 +573,38 @@ export const POST: APIRoute = async ({ request, params }) => {
         const pdfBuffer = await generatePDF(data, devId, t);
         
         // Create Jira issue with PDF attachment
-        const issueKey = await jiraService.createIssueWithAttachment(
-          devId,
-          data.requester_name || 'Unknown',
-          data.country || 'Unknown',
-          data.product || 'Unknown',
-          `Brief request generated with DevID: ${devId}\n\nRequester: ${data.requester_name}\nCountry: ${data.country}\nProduct: ${data.product}\n\nThis task was automatically created when the brief request was submitted.`,
+        const issueData = {
+          devId: devId,
+          title: `${data.country} - ${data.product} - ${data.requester_name}`,
+          description: `Brief request generated with DevID: ${devId}\n\nRequester: ${data.requester_name}\nCountry: ${data.country}\nProduct: ${data.product}\n\nThis task was automatically created when the brief request was submitted.`,
+          requester: data.requester_name || 'Unknown',
+          country: data.country || 'Unknown',
+          product: data.product || 'Unknown'
+        };
+        
+        // Filter image files for Jira attachment
+        const imageFiles: { [key: string]: File } = {};
+        ['images', 'logos', 'reference_image', 'guidelines_document'].forEach(field => {
+          if (files[field]) {
+            if (Array.isArray(files[field])) {
+              // For multiple files, add each with a unique key
+              (files[field] as File[]).forEach((file, index) => {
+                imageFiles[`${field}_${index}`] = file;
+              });
+            } else {
+              imageFiles[field] = files[field] as File;
+            }
+          }
+        });
+        
+        const issueResult = await jiraService.createIssueWithMultipleAttachments(
+          issueData,
           pdfBuffer,
-          `${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}.pdf`
+          `${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}.pdf`,
+          imageFiles
         );
+        
+        const issueKey = issueResult.issueKey;
         
         console.log('Jira task created successfully with PDF attachment:', issueKey);
       } else {
