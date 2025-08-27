@@ -105,8 +105,5 @@ export interface RequestDocument {
   // Jira task key
   jiraTaskKey?: string;
   languages?: string;
-  additionalImages?: string;
   logos?: string;
-  landingFlow?: string;
-  specialFeatures?: string;
 }

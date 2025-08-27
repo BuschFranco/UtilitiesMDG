@@ -385,10 +385,7 @@ export const POST: APIRoute = async ({ request, params }) => {
           specialFunctionalities: data.special_functionalities,
           referenceUrl: data.reference_url,
           languages: data.languages,
-          additionalImages: data.additional_images,
-          logos: data.logos,
-          landingFlow: data.landing_flow,
-          specialFeatures: data.special_features
+          logos: data.logos
         };
         
         if (isUpdate) {
