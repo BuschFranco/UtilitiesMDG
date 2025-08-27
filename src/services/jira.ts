@@ -84,7 +84,7 @@ class JiraService {
           ]
         },
         issuetype: {
-          name: 'Task'
+          name: 'Story'
         }
       }
     };
