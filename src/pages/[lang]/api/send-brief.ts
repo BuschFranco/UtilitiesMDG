@@ -348,7 +348,7 @@ export const POST: APIRoute = async ({ request, params }) => {
           planType: data.plan_type,
           maxiApproval: data.maxi_approval,
           createdAt: new Date(),
-          modify: isUpdate,
+          modify: isUpdate ? true : false,
           // Campos adicionales
           carriers: data.carriers,
           flowType: data.flow_type,
@@ -370,20 +370,30 @@ export const POST: APIRoute = async ({ request, params }) => {
         };
         
         if (isUpdate) {
+          // Get existing record to check adminApproval status
+          const existingRecord = await requestsCollection.findOne({ devId: devId });
+          
+          if (!existingRecord) {
+            throw new Error(`No record found with DevID: ${devId}`);
+          }
+          
+          // If adminApproval is "Aprobado", change it to "Pending"
+          const updateData = {
+            ...requestDocument,
+            updatedAt: new Date()
+          };
+          
+          if (existingRecord.adminApproval == "Aprobado") {
+            updateData.adminApproval = "Pending";
+          }
+          
           // Update existing record
           const updateResult = await requestsCollection.updateOne(
             { devId: devId },
             { 
-              $set: {
-                ...requestDocument,
-                updatedAt: new Date()
-              }
+              $set: updateData
             }
           );
-          
-          if (updateResult.matchedCount === 0) {
-            throw new Error(`No record found with DevID: ${devId}`);
-          }
           
           return `Request ${devId} updated in MongoDB successfully`;
         } else {
