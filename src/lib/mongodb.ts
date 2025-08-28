@@ -86,7 +86,8 @@ export interface RequestDocument {
   planType: string;
   maxiApproval: string;
   createdAt: Date;
-  // Campos adicionales opcionales
+  updatedAt?: Date;
+  modify?: boolean;
   carriers?: string;
   flowType?: string;
   trafficOrigin?: string;
@@ -102,7 +103,7 @@ export interface RequestDocument {
   priceText?: string;
   specialFunctionalities?: string;
   referenceUrl?: string;
-  // Jira task key
+  images?: string;
   jiraTaskKey?: string;
   languages?: string;
   logos?: string;

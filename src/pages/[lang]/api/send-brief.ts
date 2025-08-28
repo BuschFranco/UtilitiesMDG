@@ -348,6 +348,7 @@ export const POST: APIRoute = async ({ request, params }) => {
           planType: data.plan_type,
           maxiApproval: data.maxi_approval,
           createdAt: new Date(),
+          modify: isUpdate,
           // Campos adicionales
           carriers: data.carriers,
           flowType: data.flow_type,
