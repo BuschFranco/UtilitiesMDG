@@ -42,7 +42,7 @@ const { translations: t, currentLang } = Astro.props;
           <label for="existing_devid" class="form-label">{t.existingDevId}:</label>
           <div class="devid-input-group">
             <input type="text" id="existing_devid" name="existing_devid" class="form-input" placeholder={t.existingDevIdPlaceholder}>
-            <button type="button" id="load-data-btn" class="btn-secondary">{t.loadExistingData}</button>
+            <button type="button" id="load-data-btn" class="load-data-btn">{t.loadExistingData}</button>
           </div>
           <div id="devid-status" class="devid-status"></div>
         </div>
@@ -444,28 +444,159 @@ const { translations: t, currentLang } = Astro.props;
   /* DevID Status Styles */
   .devid-status {
     margin-top: 1rem;
-    padding: 0.75rem;
-    border-radius: 8px;
+    padding: 1rem;
+    border-radius: 12px;
     font-weight: 500;
     text-align: center;
+    transition: all 0.3s ease;
+    min-height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
   }
 
   .devid-status.success {
-    background: #d1fae5;
+    background: linear-gradient(135deg, #d1fae5 0%, #a7f3d0 100%);
     color: #065f46;
-    border: 1px solid #a7f3d0;
+    border: 1px solid #10b981;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.15);
   }
 
   .devid-status.error {
-    background: #fee2e2;
+    background: linear-gradient(135deg, #fee2e2 0%, #fca5a5 100%);
     color: #991b1b;
-    border: 1px solid #fca5a5;
+    border: 1px solid #ef4444;
+    box-shadow: 0 4px 12px rgba(239, 68, 68, 0.15);
   }
 
   .devid-status.loading {
-    background: #dbeafe;
+    background: linear-gradient(135deg, #dbeafe 0%, #93c5fd 100%);
     color: #1e40af;
-    border: 1px solid #93c5fd;
+    border: 1px solid #3b82f6;
+    box-shadow: 0 4px 12px rgba(59, 130, 246, 0.15);
+    position: relative;
+  }
+
+  /* Loading Spinner for DevID Status */
+  .devid-loading-spinner {
+    width: 20px;
+    height: 20px;
+    border: 2px solid rgba(30, 64, 175, 0.3);
+    border-top: 2px solid #1e40af;
+    border-radius: 50%;
+    animation: devid-spin 1s linear infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes devid-spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+  }
+
+  /* Success and Error Icons */
+  .devid-status-icon {
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+
+  .devid-status.success .devid-status-icon {
+    background: #10b981;
+    color: white;
+  }
+
+  .devid-status.error .devid-status-icon {
+    background: #ef4444;
+    color: white;
+  }
+
+  /* Load Data Button Improved Styles */
+  .load-data-btn {
+    background: linear-gradient(135deg, #8b5cf6 0%, #7c3aed 50%, #6d28d9 100%);
+    color: white;
+    border: none;
+    padding: 0.875rem 1.75rem;
+    border-radius: 12px;
+    cursor: pointer;
+    font-weight: 600;
+    font-size: 0.95rem;
+    letter-spacing: 0.025em;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    white-space: nowrap;
+    position: relative;
+    overflow: hidden;
+    box-shadow: 0 4px 14px 0 rgba(139, 92, 246, 0.25);
+    min-height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .load-data-btn::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+  }
+
+  .load-data-btn:hover {
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 8px 25px 0 rgba(139, 92, 246, 0.4);
+    background: linear-gradient(135deg, #9333ea 0%, #8b5cf6 50%, #7c3aed 100%);
+  }
+
+  .load-data-btn:hover::before {
+    left: 100%;
+  }
+
+  .load-data-btn:active {
+    transform: translateY(-1px) scale(1.01);
+    box-shadow: 0 4px 15px 0 rgba(139, 92, 246, 0.3);
+  }
+
+  .load-data-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: 0 2px 8px 0 rgba(139, 92, 246, 0.15);
+  }
+
+  .load-data-btn:disabled:hover {
+    transform: none;
+    box-shadow: 0 2px 8px 0 rgba(139, 92, 246, 0.15);
+  }
+
+  /* Loading state for the button */
+  .load-data-btn.loading {
+    pointer-events: none;
+  }
+
+  .load-data-btn.loading::after {
+    content: '';
+    position: absolute;
+    width: 16px;
+    height: 16px;
+    margin: auto;
+    border: 2px solid transparent;
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+  }
+
+  @keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
   }
     border-left-color: #a855f7;
   }
@@ -1408,30 +1539,58 @@ const { translations: t, currentLang } = Astro.props;
           return;
         }
       
-      showDevIdStatus(t.loadingData, 'loading');
-      
-      try {
-        const response = await fetch(`/${currentLang}/api/get-brief?devId=${encodeURIComponent(devId)}`);
-        const result = await response.json();
+        // Disable button and show loading state
+        loadDataBtn.disabled = true;
+        loadDataBtn.classList.add('loading');
+        const originalText = loadDataBtn.textContent;
+        loadDataBtn.textContent = 'Cargando...';
         
-        if (result.success && result.data) {
-          populateForm(result.data);
-          mainFormContainer.style.display = 'block';
-          showDevIdStatus('Datos cargados correctamente', 'success');
-        } else {
-          showDevIdStatus(t.devIdNotFound, 'error');
-        }
-      } catch (error) {
+        showDevIdStatus(t.loadingData, 'loading');
+      
+        try {
+          const response = await fetch(`/${currentLang}/api/get-brief?devId=${encodeURIComponent(devId)}`);
+          const result = await response.json();
+          
+          if (result.success && result.data) {
+            populateForm(result.data);
+            mainFormContainer.style.display = 'block';
+            showDevIdStatus('Datos cargados correctamente', 'success');
+          } else {
+            showDevIdStatus(t.devIdNotFound, 'error');
+          }
+        } catch (error) {
           console.error('Error loading data:', error);
           showDevIdStatus('Error al cargar los datos', 'error');
+        } finally {
+          // Re-enable button and restore original state
+          loadDataBtn.disabled = false;
+          loadDataBtn.classList.remove('loading');
+          loadDataBtn.textContent = originalText;
         }
       });
     }
     
     function showDevIdStatus(message, type) {
       if (devIdStatus) {
-        devIdStatus.textContent = message;
         devIdStatus.className = `devid-status ${type}`;
+        
+        if (type === 'loading') {
+          devIdStatus.innerHTML = `
+            <div class="devid-loading-spinner"></div>
+          `;
+        } else if (type === 'success') {
+          devIdStatus.innerHTML = `
+            <div class="devid-status-icon">✓</div>
+            <span>${message}</span>
+          `;
+        } else if (type === 'error') {
+          devIdStatus.innerHTML = `
+            <div class="devid-status-icon">✕</div>
+            <span>${message}</span>
+          `;
+        } else {
+          devIdStatus.textContent = message;
+        }
       }
     }
     

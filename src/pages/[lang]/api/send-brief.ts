@@ -1,6 +1,6 @@
 import type { APIRoute } from 'astro';
 import nodemailer from 'nodemailer';
-import puppeteer from 'puppeteer';
+import { jsPDF } from 'jspdf';
 import { useTranslations, getStaticPaths } from '../../../i18n';
 import { getRequestsCollection, type RequestDocument } from '../../../lib/mongodb';
 import JiraService from '../../../services/jira';
@@ -35,155 +35,124 @@ checkEnvVars();
 console.log("EMAIL_CONFIG:", EMAIL_CONFIG);
 console.log("RECIPIENT_EMAIL:", RECIPIENT_EMAIL);
 
-// Function to generate PDF using puppeteer
+// Function to generate PDF using jsPDF
 async function generatePDF(data: any, devId: string, t: any): Promise<Buffer> {
-  const browser = await puppeteer.launch({
-    headless: true,
-    args: ['--no-sandbox', '--disable-setuid-sandbox']
+  const doc = new jsPDF();
+  
+  // Use already processed formatted data
+  const colorsFormatted = data.colors_formatted || 'N/A';
+  const tcLinksFormatted = data.tc_links_formatted || 'N/A';
+  
+  // Set up document properties
+  doc.setProperties({
+    title: `Brief Request - ${devId}`,
+    subject: 'Development Request Brief',
+    author: 'MDG System',
+    creator: 'DevRequest Application'
   });
   
-  try {
-    const page = await browser.newPage();
+  // Helper function to add text with word wrapping
+  const addWrappedText = (text: string, x: number, y: number, maxWidth: number, lineHeight: number = 6) => {
+    const lines = doc.splitTextToSize(text, maxWidth);
+    doc.text(lines, x, y);
+    return y + (lines.length * lineHeight);
+  };
+  
+  // Helper function to add a section header
+  const addSectionHeader = (title: string, y: number) => {
+    doc.setFontSize(14);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(33, 150, 243); // Blue color
+    doc.text(title, 20, y);
+    doc.setDrawColor(33, 150, 243);
+    doc.line(20, y + 2, 190, y + 2); // Underline
+    return y + 12;
+  };
+  
+  // Helper function to add a field
+  const addField = (label: string, value: string, y: number) => {
+    doc.setFontSize(10);
+    doc.setFont('helvetica', 'bold');
+    doc.setTextColor(51, 51, 51); // Dark gray
+    doc.text(label + ':', 25, y);
     
-    // Use already processed formatted data
-    const colorsFormatted = data.colors_formatted || 'N/A';
-    const tcLinksFormatted = data.tc_links_formatted || 'N/A';
-    
-    const htmlContent = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <meta charset="UTF-8">
-          <title>Brief Request - ${devId}</title>
-          <style>
-            body { font-family: Arial, sans-serif; margin: 20px; line-height: 1.6; }
-            .header { text-align: center; margin-bottom: 30px; border-bottom: 2px solid #333; padding-bottom: 20px; }
-            .dev-id { font-size: 24px; font-weight: bold; color: #d32f2f; margin: 10px 0; }
-            .section { margin-bottom: 25px; }
-            .section h3 { background-color: #f5f5f5; padding: 10px; margin: 0 0 15px 0; border-left: 4px solid #2196f3; }
-            .field { margin-bottom: 10px; display: flex; }
-            .label { font-weight: bold; min-width: 200px; color: #333; }
-            .value { flex: 1; color: #666; }
-            .footer { text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #ccc; font-size: 12px; color: #888; }
-          </style>
-        </head>
-        <body>
-          <div class="header">
-            <h1>${t.title}</h1>
-            <div class="dev-id">DevID: ${devId}</div>
-            <p>Generated on ${new Date().toLocaleString()}</p>
-          </div>
-          
-          <div class="content">
-            <div class="section">
-              <h3>1. ${t.basicInfo}</h3>
-              <div class="field">
-                <span class="label">${t.country}:</span>
-                <span class="value">${data.country || 'N/A'}</span>
-              </div>
-              <div class="field">
-                <span class="label">${t.carriers}:</span>
-                <span class="value">${data.carriers || 'N/A'}</span>
-              </div>
-              <div class="field">
-                <span class="label">${t.product}:</span>
-                <span class="value">${data.product || 'N/A'}</span>
-              </div>
-            </div>
-            
-            <div class="section">
-              <h3>2. ${t.landingPageInfo}</h3>
-              <div class="field">
-                <span class="label">${t.flowType}:</span>
-                <span class="value">${data.flow_type || 'N/A'}</span>
-              </div>
-              <div class="field">
-                <span class="label">${t.trafficSource}:</span>
-                <span class="value">${data.traffic_origin || 'N/A'}</span>
-              </div>
-            </div>
-            
-            <div class="section">
-              <h3>3. ${t.contentCopies}</h3>
-              <div class="field">
-                <span class="label">${t.copies}:</span>
-                <span class="value">${String(data.copies || 'N/A').replace(/\n/g, '<br>')}</span>
-              </div>
-              <div class="field">
-                <span class="label">${t.links}:</span>
-                <span class="value">${tcLinksFormatted}</span>
-              </div>
-              <div class="field">
-                <span class="label">${t.languageSelector}:</span>
-                <span class="value">${data.languages || 'N/A'}</span>
-              </div>
-            </div>
-            
-            <div class="section">
-              <h3>4. ${t.graphicResources}</h3>
-              <div class="field">
-                <span class="label">${t.images}:</span>
-                <span class="value">${String(data.images || 'N/A').replace(/\n/g, '<br>')}</span>
-              </div>
-              <div class="field">
-                <span class="label">${t.logos}:</span>
-                <span class="value">${String(data.logos || 'N/A').replace(/\n/g, '<br>')}</span>
-              </div>
-              <div class="field">
-                <span class="label">${t.colors}:</span>
-                <span class="value">${colorsFormatted}</span>
-              </div>
-            </div>
-            
-            <div class="section">
-              <h3>5. ${t.technicalFunctionalities}</h3>
-              <div class="field">
-                <span class="label">${t.specialFunctionalities}:</span>
-                <span class="value">${String(data.special_functionalities || 'N/A').replace(/\n/g, '<br>')}</span>
-              </div>
-              <div class="field">
-                <span class="label">Subscription/Unsubscription Keywords:</span>
-                <span class="value">${String(data.subscription_keywords || 'N/A').replace(/\n/g, '<br>')}</span>
-              </div>
-              <div class="field">
-                <span class="label">Text containing the price/pricepoint:</span>
-                <span class="value">${String(data.price_text || 'N/A').replace(/\n/g, '<br>')}</span>
-              </div>
-            </div>
-            
-            <div class="section">
-              <h3>6. ${t.requesterInfo}</h3>
-              <div class="field">
-                <span class="label">${t.requesterName}:</span>
-                <span class="value">${data.requester_name || 'N/A'}</span>
-              </div>
-
-            </div>
-          </div>
-          
-          <div class="footer">
-            <p>Generated on ${new Date().toLocaleString()} | DevID: ${devId}</p>
-          </div>
-        </body>
-      </html>
-    `;
-    
-    await page.setContent(htmlContent);
-    const pdfBuffer = await page.pdf({
-      format: 'A4',
-      printBackground: true,
-      margin: {
-        top: '20mm',
-        right: '20mm',
-        bottom: '20mm',
-        left: '20mm'
-      }
-    });
-    
-    return Buffer.from(pdfBuffer);
-  } finally {
-    await browser.close();
+    doc.setFont('helvetica', 'normal');
+    doc.setTextColor(102, 102, 102); // Light gray
+    const cleanValue = String(value || 'N/A').replace(/\n/g, ' ').substring(0, 200); // Limit length
+    return addWrappedText(cleanValue, 80, y, 110, 5);
+  };
+  
+  let currentY = 20;
+  
+  // Header
+  doc.setFontSize(18);
+  doc.setFont('helvetica', 'bold');
+  doc.setTextColor(0, 0, 0);
+  doc.text(t.title || 'Brief Request', 105, currentY, { align: 'center' });
+  
+  currentY += 10;
+  doc.setFontSize(16);
+  doc.setTextColor(211, 47, 47); // Red color
+  doc.text(`DevID: ${devId}`, 105, currentY, { align: 'center' });
+  
+  currentY += 8;
+  doc.setFontSize(10);
+  doc.setTextColor(102, 102, 102);
+  doc.text(`Generated on ${new Date().toLocaleString()}`, 105, currentY, { align: 'center' });
+  
+  currentY += 15;
+  
+  // Section 1: Basic Info
+  currentY = addSectionHeader(`1. ${t.basicInfo || 'Basic Information'}`, currentY);
+  currentY = addField(t.country || 'Country', data.country, currentY) + 3;
+  currentY = addField(t.carriers || 'Carriers', data.carriers, currentY) + 3;
+  currentY = addField(t.product || 'Product', data.product, currentY) + 8;
+  
+  // Section 2: Landing Page Info
+  currentY = addSectionHeader(`2. ${t.landingPageInfo || 'Landing Page Information'}`, currentY);
+  currentY = addField(t.flowType || 'Flow Type', data.flow_type, currentY) + 3;
+  currentY = addField(t.trafficSource || 'Traffic Source', data.traffic_origin, currentY) + 8;
+  
+  // Section 3: Content & Copies
+  currentY = addSectionHeader(`3. ${t.contentCopies || 'Content & Copies'}`, currentY);
+  currentY = addField(t.copies || 'Copies', data.copies, currentY) + 3;
+  currentY = addField(t.links || 'Links', tcLinksFormatted, currentY) + 3;
+  currentY = addField(t.languageSelector || 'Languages', data.languages, currentY) + 8;
+  
+  // Check if we need a new page
+  if (currentY > 250) {
+    doc.addPage();
+    currentY = 20;
   }
+  
+  // Section 4: Graphic Resources
+  currentY = addSectionHeader(`4. ${t.graphicResources || 'Graphic Resources'}`, currentY);
+  currentY = addField(t.images || 'Images', data.images, currentY) + 3;
+  currentY = addField(t.logos || 'Logos', data.logos, currentY) + 3;
+  currentY = addField(t.colors || 'Colors', colorsFormatted, currentY) + 8;
+  
+  // Section 5: Technical Functionalities
+  currentY = addSectionHeader(`5. ${t.technicalFunctionalities || 'Technical Functionalities'}`, currentY);
+  currentY = addField(t.specialFunctionalities || 'Special Functionalities', data.special_functionalities, currentY) + 3;
+  currentY = addField('Subscription Keywords', data.subscription_keywords, currentY) + 3;
+  currentY = addField('Price Text', data.price_text, currentY) + 8;
+  
+  // Section 6: Requester Info
+  currentY = addSectionHeader(`6. ${t.requesterInfo || 'Requester Information'}`, currentY);
+  currentY = addField(t.requesterName || 'Requester Name', data.requester_name, currentY) + 8;
+  
+  // Footer
+  const pageCount = doc.getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(8);
+    doc.setTextColor(136, 136, 136);
+    doc.text(`Generated on ${new Date().toLocaleString()} | DevID: ${devId} | Page ${i} of ${pageCount}`, 105, 285, { align: 'center' });
+  }
+  
+  // Convert to buffer
+  const pdfOutput = doc.output('arraybuffer');
+  return Buffer.from(pdfOutput);
 }
 
 export const POST: APIRoute = async ({ request, params }) => {
