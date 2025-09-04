@@ -318,6 +318,7 @@ export const POST: APIRoute = async ({ request, params }) => {
           maxiApproval: data.maxi_approval,
           createdAt: new Date(),
           modify: isUpdate ? true : false,
+          type: isUpdate ? 'modify' : 'new',
           // Campos adicionales
           carriers: data.carriers,
           flowType: data.flow_type,
@@ -680,13 +681,27 @@ export const POST: APIRoute = async ({ request, params }) => {
     // Send email
     try {
       const emailSubjectPrefix = isUpdate ? '[Modify] ' : '';
+      const emailSubject = `${emailSubjectPrefix}Req: ${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_email}`;
+      
+      // Send to main recipient (franco@mediadigitalgroup.com)
       await transporter.sendMail({
         from: EMAIL_CONFIG.auth.user,
         to: RECIPIENT_EMAIL,
-        subject: `${emailSubjectPrefix}Req: ${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_email}`,
+        subject: emailSubject,
         html: emailContent,
         attachments: attachments
       });
+      
+      // Send copy to requester email if it's valid and different from main recipient
+      if (data.requester_email && data.requester_email !== 'N/A' && data.requester_email !== RECIPIENT_EMAIL) {
+        await transporter.sendMail({
+          from: EMAIL_CONFIG.auth.user,
+          to: data.requester_email,
+          subject: emailSubject,
+          html: emailContent,
+          attachments: attachments
+        });
+      }
     } catch (emailError) {
       console.error('Error sending email:', emailError);
       return new Response(

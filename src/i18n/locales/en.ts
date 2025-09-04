@@ -115,6 +115,7 @@ const en: Translations = {
 
   francoNotification: 'This information will be sent to Franco (franco@mediadigitalgroup.com)',
   generateBrief: 'Generate Request',
+  saveChanges: 'Save Changes',
   generating: 'Generating...',
   
   // Messages

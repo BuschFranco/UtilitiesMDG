@@ -241,8 +241,12 @@ const { translations: t, currentLang } = Astro.props;
 
       </div> <!-- Cierre del contenedor del formulario principal -->
       
-      <!-- Submit Button -->
+      <!-- Submit Buttons -->
       <div class="form-actions scroll-animate">
+        <button type="button" class="btn btn-secondary" id="saveBtn">
+          <span id="saveText">{t.saveChanges}</span>
+          <span id="saveLoadingSpinner" class="loading" style="display: none; margin-left: 0.5rem;"></span>
+        </button>
         <button type="submit" class="btn btn-primary" id="submitBtn">
           <span id="submitText">{t.generateBrief}</span>
           <span id="loadingSpinner" class="loading" style="display: none; margin-left: 0.5rem;"></span>
@@ -1135,6 +1139,22 @@ const { translations: t, currentLang } = Astro.props;
     transform: none;
   }
 
+  .btn-secondary {
+    background: linear-gradient(135deg, #6b7280, #4b5563);
+    box-shadow: 0 4px 15px rgba(107, 114, 128, 0.3);
+  }
+
+  .btn-secondary:hover {
+    box-shadow: 0 8px 25px rgba(107, 114, 128, 0.4);
+  }
+
+  .form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: center;
+    align-items: center;
+  }
+
   /* File Upload Styles */
   .file-upload-container {
     position: relative;
@@ -1614,7 +1634,7 @@ const { translations: t, currentLang } = Astro.props;
       // Field mapping from database (camelCase) to form (snake_case)
       const fieldMapping = {
         'devId': 'existing_devid',
-        'requesterName': 'requester_email',
+        'requesterEmail': 'requester_email',
         'jiraTaskUrl': 'jira_task_url',
         'jiraTaskKey': 'jira_task_key',
         'planType': 'plan_type',
@@ -1927,6 +1947,53 @@ const { translations: t, currentLang } = Astro.props;
         loadingSpinner.style.display = 'none';
       }
     }
+
+    function setSaveLoading(loading) {
+      const saveBtn = document.getElementById('saveBtn');
+      const saveText = document.getElementById('saveText');
+      const saveLoadingSpinner = document.getElementById('saveLoadingSpinner');
+      
+      if (loading) {
+        saveBtn.disabled = true;
+        saveText.textContent = 'Saving...';
+        saveLoadingSpinner.style.display = 'inline-block';
+      } else {
+        saveBtn.disabled = false;
+        saveText.textContent = t.saveChanges;
+        saveLoadingSpinner.style.display = 'none';
+      }
+    }
+
+    // Save Changes button functionality
+    document.getElementById('saveBtn').addEventListener('click', async function(e) {
+      e.preventDefault();
+      
+      setSaveLoading(true);
+      alertContainer.style.display = 'none';
+
+      try {
+        const formData = new FormData(form);
+        
+        const response = await fetch(`/${currentLang}/api/save-brief`, {
+          method: 'POST',
+          body: formData
+        });
+
+        const result = await response.json();
+
+        if (result.success) {
+          showSuccessWithDevId('Request saved successfully! DevID has been sent to your email.', result.devId);
+        } else {
+          showAlert(result.message || 'Error saving request', 'error');
+        }
+      } catch (error) {
+        console.error('Error:', error);
+        showAlert('Error saving request. Please try again.', 'error');
+      } finally {
+        setSaveLoading(false);
+      }
+    });
+
 
     form.addEventListener('submit', async function(e) {
       e.preventDefault();
