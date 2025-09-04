@@ -80,7 +80,7 @@ export async function getRequestsCollection(): Promise<Collection> {
 // Interface para el documento de solicitud
 export interface RequestDocument {
   devId: string;
-  requesterName: string;
+  requesterEmail: string;
   country: string;
   product: string;
   planType: string;

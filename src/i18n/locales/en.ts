@@ -64,7 +64,7 @@ const en: Translations = {
   juliNote: 'Note: If you don\'t have the necessary graphic resources for the landing, please contact Juli for assistance.',
   contactJuli: 'Contact Juli',
   
-  requesterName: 'Requester Name',
+  requesterName: 'Requester Email',
 
   planType: 'Plan Type',
   links: 'Links',
@@ -95,7 +95,7 @@ const en: Translations = {
   logosPlaceholder: 'Specify logos needed, brand guidelines, and usage...',
   flowTypePlaceholder: 'Select the main conversion flow type',
   specialFunctionalitiesPlaceholder: 'E.g.: Click button when clicking anywhere on landing page, auto-click after 5 seconds, checkbox prefill, etc',
-  requesterNamePlaceholder: 'Enter your full name',
+  requesterNamePlaceholder: 'example@example.com',
   jiraTaskUrlPlaceholder: 'Enter the Jira task URL',
   linkDescriptionPlaceholder: 'E.g.: Licenses',
   subscriptionKeywordsPlaceholder: 'e.g., STOP to 9521, CLP to 9522',

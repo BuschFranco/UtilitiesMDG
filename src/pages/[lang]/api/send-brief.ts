@@ -139,7 +139,7 @@ async function generatePDF(data: any, devId: string, t: any): Promise<Buffer> {
   
   // Section 6: Requester Info
   currentY = addSectionHeader(`6. ${t.requesterInfo || 'Requester Information'}`, currentY);
-  currentY = addField(t.requesterName || 'Requester Name', data.requester_name, currentY) + 8;
+  currentY = addField(t.requesterName || 'Requester Email', data.requester_email, currentY) + 8;
   
   // Footer
   const pageCount = doc.getNumberOfPages();
@@ -218,7 +218,7 @@ export const POST: APIRoute = async ({ request, params }) => {
      
      // Ensure all required fields have default values
      const requiredFields = {
-       requester_name: 'N/A',
+       requester_email: 'N/A',
        country: 'N/A',
        product: 'N/A',
        flow_type: 'N/A',
@@ -311,7 +311,7 @@ export const POST: APIRoute = async ({ request, params }) => {
         const requestsCollection = await getRequestsCollection();
         const requestDocument: RequestDocument = {
           devId,
-          requesterName: data.requester_name,
+          requesterEmail: data.requester_email,
           country: data.country,
           product: data.product,
           planType: data.plan_type,
@@ -451,9 +451,9 @@ export const POST: APIRoute = async ({ request, params }) => {
         
         const issueData = {
           devId: devId,
-          title: `${titlePrefix}${data.country} - ${data.product || 'N/A'} - ${data.requester_name}`,
-          description: `Brief request generated with DevID: ${devId}\n\nRequester: ${data.requester_name}\nCountry: ${data.country}\nProduct: ${data.product || 'N/A'}\n\nThis task was automatically created when the brief request was submitted.`,
-          requester: data.requester_name || 'Unknown',
+          title: `${titlePrefix}${data.country} - ${data.product || 'N/A'} - ${data.requester_email}`,
+          description: `Brief request generated with DevID: ${devId}\n\nRequester: ${data.requester_email}\nCountry: ${data.country}\nProduct: ${data.product || 'N/A'}\n\nThis task was automatically created when the brief request was submitted.`,
+          requester: data.requester_email || 'Unknown',
           country: data.country || 'Unknown',
           product: data.product || 'Unknown'
         };
@@ -474,7 +474,7 @@ export const POST: APIRoute = async ({ request, params }) => {
         const issueResult = await jiraService.createIssueWithMultipleAttachments(
           issueData,
           pdfBuffer,
-          `${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}.pdf`,
+          `${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_email}.pdf`,
           imageFiles
         );
         
@@ -635,7 +635,7 @@ export const POST: APIRoute = async ({ request, params }) => {
               <h3>7. ${t.requesterInfo}</h3>
               <div class="field">
                 <span class="label">${t.requesterName}:</span>
-                <span class="value">${data.requester_name || 'N/A'}</span>
+                <span class="value">${data.requester_email || 'N/A'}</span>
               </div>
               ${issueKey ? `
               <div class="field">
@@ -683,7 +683,7 @@ export const POST: APIRoute = async ({ request, params }) => {
       await transporter.sendMail({
         from: EMAIL_CONFIG.auth.user,
         to: RECIPIENT_EMAIL,
-        subject: `${emailSubjectPrefix}Req: ${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_name}`,
+        subject: `${emailSubjectPrefix}Req: ${data.country}-${data.product || 'N/A'}-${devId}-${data.requester_email}`,
         html: emailContent,
         attachments: attachments
       });

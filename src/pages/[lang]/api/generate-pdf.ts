@@ -45,7 +45,7 @@ export const POST: APIRoute = async ({ request, params }) => {
         reference_url: data.reference_url || 'N/A',
         reference_image: data.reference_image || 'N/A',
         guidelines_document: data.guidelines_document || 'N/A',
-        requester_name: data.requester_name || 'N/A'
+        requester_email: data.requester_email || 'N/A'
       },
       translations: {
         title: t.title,

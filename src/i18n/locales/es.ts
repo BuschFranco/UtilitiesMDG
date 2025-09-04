@@ -63,7 +63,7 @@ const es: Translations = {
   // Juli Contact Info
   juliNote: "Nota: Si no tienes los recursos gráficos necesarios para la landing, por favor contacta a Juli para obtener asistencia.",
   contactJuli: "Contactar Juli",
-  requesterName: 'Nombre del Solicitante',
+  requesterName: 'Email del Solicitante',
 
   planType: 'Tipo de Plan',
   links: 'Enlaces',
@@ -94,7 +94,7 @@ const es: Translations = {
   logosPlaceholder: 'Especifica los logos necesarios, guías de marca y uso...',
   flowTypePlaceholder: 'Selecciona el tipo de flujo de conversión principal',
   specialFunctionalitiesPlaceholder: 'Ej: Click en el botón al cliquear toda la landing, autoclick luego de 5 segundos, checkbox prefill, etc',
-  requesterNamePlaceholder: 'Ingrese su nombre completo',
+  requesterNamePlaceholder: 'ejemplo@ejemplo.com',
 
   linkDescriptionPlaceholder: 'Ej: Licencias',
   subscriptionKeywordsPlaceholder: 'Ej: STOP to 9521, CLP to 9522',

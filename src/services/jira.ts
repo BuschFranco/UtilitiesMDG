@@ -106,6 +106,10 @@ class JiraService {
       }
 
       const result = await response.json();
+      
+      // Add automatic comment
+      await this.addComment(result.key, "This comment is automatically generated upon creating the Jira task. The development request is in status: PENDING.");
+      
       return {
         issueKey: result.key,
         issueId: result.id
@@ -113,6 +117,49 @@ class JiraService {
     } catch (error) {
       console.error('Error creating Jira issue:', error);
       throw error;
+    }
+  }
+
+  async addComment(issueKey: string, commentText: string): Promise<void> {
+    this.validateConfig();
+
+    const commentPayload = {
+      body: {
+        type: 'doc',
+        version: 1,
+        content: [
+          {
+            type: 'paragraph',
+            content: [
+              {
+                type: 'text',
+                text: commentText
+              }
+            ]
+          }
+        ]
+      }
+    };
+
+    try {
+      const response = await fetch(`${this.config.baseUrl}/rest/api/3/issue/${issueKey}/comment`, {
+        method: 'POST',
+        headers: {
+          'Authorization': this.getAuthHeader(),
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(commentPayload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error(`Failed to add comment to Jira issue ${issueKey}: ${response.status} ${response.statusText} - ${errorText}`);
+        // Don't throw error for comment failure, just log it
+      }
+    } catch (error) {
+      console.error('Error adding comment to Jira issue:', error);
+      // Don't throw error for comment failure, just log it
     }
   }
 
