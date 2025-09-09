@@ -110,6 +110,9 @@ class JiraService {
       // Add automatic comment
       await this.addComment(result.key, "This comment is automatically generated upon creating the Jira task. The development request is in status: PENDING.");
       
+      // Transition to "Waiting for approval" status
+      await this.transitionToWaitingForApproval(result.key);
+      
       return {
         issueKey: result.key,
         issueId: result.id
@@ -117,6 +120,76 @@ class JiraService {
     } catch (error) {
       console.error('Error creating Jira issue:', error);
       throw error;
+    }
+  }
+
+  async getAvailableTransitions(issueKey: string): Promise<any[]> {
+    this.validateConfig();
+
+    try {
+      const response = await fetch(`${this.config.baseUrl}/rest/api/3/issue/${issueKey}/transitions`, {
+        method: 'GET',
+        headers: {
+          'Authorization': this.getAuthHeader(),
+          'Accept': 'application/json'
+        }
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.warn(`Failed to get transitions for Jira issue ${issueKey}: ${response.status} ${response.statusText} - ${errorText}`);
+        return [];
+      }
+
+      const result = await response.json();
+      return result.transitions || [];
+    } catch (error) {
+      console.warn('Error getting Jira issue transitions:', error);
+      return [];
+    }
+  }
+
+  async transitionToWaitingForApproval(issueKey: string): Promise<void> {
+    this.validateConfig();
+
+    try {
+      // Get available transitions
+      const transitions = await this.getAvailableTransitions(issueKey);
+      
+      // Find the transition for "Waiting for approval" by name
+      const waitingTransition = transitions.find(t => 
+        t.name && t.name.toLowerCase().includes('waiting for approval')
+      );
+
+      if (!waitingTransition) {
+        console.warn(`No 'Waiting for approval' transition found for issue ${issueKey}. Available transitions:`, transitions.map(t => ({ id: t.id, name: t.name })));
+        return;
+      }
+
+      const transitionPayload = {
+        transition: {
+          id: waitingTransition.id
+        }
+      };
+
+      const response = await fetch(`${this.config.baseUrl}/rest/api/3/issue/${issueKey}/transitions`, {
+        method: 'POST',
+        headers: {
+          'Authorization': this.getAuthHeader(),
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(transitionPayload)
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.warn(`Failed to transition Jira issue ${issueKey}: ${response.status} ${response.statusText} - ${errorText}`);
+      } else {
+        console.log(`Successfully transitioned issue ${issueKey} to 'Waiting for approval'`);
+      }
+    } catch (error) {
+      console.warn('Error transitioning Jira issue:', error);
     }
   }
 

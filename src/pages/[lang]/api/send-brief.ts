@@ -315,9 +315,7 @@ export const POST: APIRoute = async ({ request, params }) => {
           country: data.country,
           product: data.product,
           planType: data.plan_type,
-          maxiApproval: data.maxi_approval,
           createdAt: new Date(),
-          modify: isUpdate ? true : false,
           type: isUpdate ? 'modify' : 'new',
           // Campos adicionales
           carriers: data.carriers,

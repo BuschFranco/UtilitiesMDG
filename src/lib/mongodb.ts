@@ -84,10 +84,8 @@ export interface RequestDocument {
   country: string;
   product: string;
   planType: string;
-  maxiApproval: string;
   createdAt: Date;
   updatedAt?: Date;
-  modify?: boolean;
   carriers?: string;
   flowType?: string;
   trafficOrigin?: string;

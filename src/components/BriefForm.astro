@@ -1638,7 +1638,6 @@ const { translations: t, currentLang } = Astro.props;
         'jiraTaskUrl': 'jira_task_url',
         'jiraTaskKey': 'jira_task_key',
         'planType': 'plan_type',
-        'maxiApproval': 'maxi_approval',
         'flowType': 'flow_type',
         'trafficOrigin': 'traffic_origin',
         'tcLinksFormatted': 'tc_links_formatted',
@@ -2005,9 +2004,7 @@ const { translations: t, currentLang } = Astro.props;
         const formData = new FormData(form);
         
         // Convert FormData to object
-        const briefData = {
-          maxi_approval: 'Pending' // Always set to Pending
-        };
+        const briefData = {};
         
         // Handle regular fields and files separately
         for (const [key, value] of formData.entries()) {
