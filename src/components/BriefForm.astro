@@ -125,15 +125,15 @@ const { translations: t, currentLang } = Astro.props;
         </div>
         <div class="form-group">
           <label for="languages" class="form-label">{t.languages}:</label>
-          <input type="text" id="languages" name="languages" class="form-input" placeholder={t.languagesPlaceholder}>
+          <input type="text" id="languages" name="languages" class="form-input" placeholder={t.languagesPlaceholder} required>
         </div>
         <div class="form-group">
           <label for="subscription_keywords" class="form-label">{t.subscriptionKeywords}:</label>
-          <input type="text" id="subscription_keywords" name="subscription_keywords" class="form-input" placeholder={t.subscriptionKeywordsPlaceholder}>
+          <input type="text" id="subscription_keywords" name="subscription_keywords" class="form-input" placeholder={t.subscriptionKeywordsPlaceholder} required>
         </div>
         <div class="form-group">
           <label for="price_text" class="form-label">{t.priceText}/pricepoint:</label>
-          <input type="text" id="price_text" name="price_text" class="form-input" placeholder={t.priceTextPlaceholder}>
+          <input type="text" id="price_text" name="price_text" class="form-input" placeholder={t.priceTextPlaceholder} required>
         </div>
       </section>
 
@@ -149,7 +149,7 @@ const { translations: t, currentLang } = Astro.props;
         <div class="form-group">
           <label for="images" class="form-label">Imágenes y Banners:</label>
           <div class="file-upload-container">
-            <input type="file" id="images" name="images" class="file-input" multiple accept="image/*">
+            <input type="file" id="images" name="images" class="file-input" multiple accept="image/*" required>
             <label for="images" class="file-upload-label">
               <span class="upload-icon">📁</span>
               <span class="upload-text">{t.selectImages}</span>
@@ -1133,10 +1133,20 @@ const { translations: t, currentLang } = Astro.props;
     transform: translateY(0);
   }
 
-  .btn:disabled {
-    opacity: 0.6;
+  .btn:disabled,
+  .btn.disabled {
+    opacity: 0.5;
     cursor: not-allowed;
     transform: none;
+    background: linear-gradient(135deg, #9ca3af, #6b7280);
+    box-shadow: 0 2px 8px rgba(156, 163, 175, 0.2);
+    pointer-events: none;
+  }
+
+  .btn:disabled:hover,
+  .btn.disabled:hover {
+    transform: none;
+    box-shadow: 0 2px 8px rgba(156, 163, 175, 0.2);
   }
 
   .btn-secondary {
@@ -1546,6 +1556,12 @@ const { translations: t, currentLang } = Astro.props;
             if (mainFormContainer) mainFormContainer.style.display = 'block';
             clearForm();
           }
+          // Re-validate after tab change
+          setTimeout(() => {
+            if (window.validateRequiredFields) {
+              window.validateRequiredFields();
+            }
+          }, 100);
         });
       });
     }
@@ -1575,6 +1591,12 @@ const { translations: t, currentLang } = Astro.props;
             populateForm(result.data);
             mainFormContainer.style.display = 'block';
             showDevIdStatus('Datos cargados correctamente', 'success');
+            // Re-validate after loading data
+            setTimeout(() => {
+              if (window.validateRequiredFields) {
+                window.validateRequiredFields();
+              }
+            }, 200);
           } else {
             showDevIdStatus(t.devIdNotFound, 'error');
           }
@@ -1916,6 +1938,40 @@ const { translations: t, currentLang } = Astro.props;
     const loadingSpinner = document.getElementById('loadingSpinner');
     const alertContainer = document.getElementById('alertContainer');
 
+    // Function to validate required fields and update submit button state
+    function validateRequiredFields() {
+      const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
+      let allValid = true;
+      
+      requiredFields.forEach(field => {
+        if (!field.value.trim()) {
+          allValid = false;
+        }
+      });
+      
+      // Update submit button state
+      if (allValid) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('disabled');
+      } else {
+        submitBtn.disabled = true;
+        submitBtn.classList.add('disabled');
+      }
+    }
+
+    // Make validateRequiredFields globally accessible
+    window.validateRequiredFields = validateRequiredFields;
+
+    // Add event listeners to all required fields
+    const requiredFields = form.querySelectorAll('input[required], select[required], textarea[required]');
+    requiredFields.forEach(field => {
+      field.addEventListener('input', validateRequiredFields);
+      field.addEventListener('change', validateRequiredFields);
+    });
+
+    // Initial validation on page load
+    validateRequiredFields();
+
     function showAlert(message, type) {
       alertContainer.innerHTML = `<div class="alert alert-${type}">${message}</div>`;
       alertContainer.style.display = 'block';
@@ -1941,9 +1997,10 @@ const { translations: t, currentLang } = Astro.props;
         submitText.textContent = t.generating;
         loadingSpinner.style.display = 'inline-block';
       } else {
-        submitBtn.disabled = false;
         submitText.textContent = t.generateBrief;
         loadingSpinner.style.display = 'none';
+        // Re-validate after loading to restore proper button state
+        validateRequiredFields();
       }
     }
 
