@@ -1530,6 +1530,13 @@ const { translations: t, currentLang } = Astro.props;
     if (operationRadios.length > 0) {
       operationRadios.forEach(radio => {
         radio.addEventListener('change', function() {
+          // Clear any existing alert messages when switching tabs
+          const alertContainer = document.getElementById('alertContainer');
+          if (alertContainer) {
+            alertContainer.style.display = 'none';
+            alertContainer.innerHTML = '';
+          }
+          
           if (this.value === 'modify') {
             if (devIdSection) devIdSection.style.display = 'block';
             if (mainFormContainer) mainFormContainer.style.display = 'none';
