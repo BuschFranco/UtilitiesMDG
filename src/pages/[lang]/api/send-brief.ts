@@ -5,6 +5,12 @@ import { useTranslations, getStaticPaths } from '../../../i18n';
 import { getRequestsCollection, type RequestDocument } from '../../../lib/mongodb';
 import JiraService from '../../../services/jira';
 
+// Constants for approval states
+const APPROVAL_STATES = {
+  APPROVED: 'Aprobado',
+  PENDING: 'Pending'
+} as const;
+
 export { getStaticPaths };
 
 // Email configuration - You should set these as environment variables
@@ -167,6 +173,7 @@ export const POST: APIRoute = async ({ request, params }) => {
     
     for (const [key, value] of formData.entries()) {
       if (value instanceof File) {
+        console.log(`File received: ${key} = ${value.name} (${value.size} bytes)`);
         // Handle multiple files for the same field
         if (files[key]) {
           if (Array.isArray(files[key])) {
@@ -351,8 +358,8 @@ export const POST: APIRoute = async ({ request, params }) => {
             updatedAt: new Date()
           };
           
-          if (existingRecord.adminApproval == "Aprobado") {
-            updateData.adminApproval = "Pending";
+          if (existingRecord.adminApproval == APPROVAL_STATES.APPROVED) {
+            updateData.adminApproval = APPROVAL_STATES.PENDING;
           }
           
           // Update existing record
@@ -404,15 +411,19 @@ export const POST: APIRoute = async ({ request, params }) => {
     // Default values already applied earlier in the process
 
     // Process file names for display
+    console.log('Files object:', Object.keys(files));
     ['images', 'logos', 'reference_image', 'guidelines_document'].forEach(field => {
       if (files[field]) {
         if (Array.isArray(files[field])) {
           data[field] = (files[field] as File[]).map(file => file.name).join(', ');
+          console.log(`${field} (array):`, (files[field] as File[]).map(f => f.name));
         } else {
           data[field] = (files[field] as File).name;
+          console.log(`${field} (single):`, (files[field] as File).name);
         }
       } else {
         data[field] = 'N/A';
+        console.log(`${field}: No files found`);
       }
     });
 
@@ -454,7 +465,13 @@ export const POST: APIRoute = async ({ request, params }) => {
           description: `Brief request generated with DevID: ${devId}\n\nRequester: ${data.requester_email}\nCountry: ${data.country}\nProduct: ${data.product || 'N/A'}\n\nThis task was automatically created when the brief request was submitted.`,
           requester: data.requester_email || 'Unknown',
           country: data.country || 'Unknown',
-          product: data.product || 'Unknown'
+          product: data.product || 'Unknown',
+          translations: {
+            jiraRequester: t.jiraRequester,
+            jiraCountry: t.jiraCountry,
+            jiraProduct: t.jiraProduct,
+            jiraDescription: t.jiraDescription
+          }
         };
         
         const imageFiles: { [key: string]: File } = {};
@@ -665,16 +682,42 @@ export const POST: APIRoute = async ({ request, params }) => {
     });
     
     // Add other file attachments
+    console.log('Processing attachments for files:', Object.keys(files));
     for (const [key, file] of Object.entries(files)) {
-      if (file && file.size > 0) {
-        const buffer = await file.arrayBuffer();
-        attachments.push({
-          filename: file.name,
-          content: Buffer.from(buffer),
-          contentType: file.type
-        });
+      console.log(`Processing attachment for key: ${key}`);
+      if (file) {
+        if (Array.isArray(file)) {
+          console.log(`${key} is array with ${file.length} files`);
+          // Handle multiple files
+          for (const singleFile of file) {
+            if (singleFile && singleFile.size > 0) {
+              console.log(`Adding attachment: ${singleFile.name} (${singleFile.size} bytes)`);
+              const buffer = await singleFile.arrayBuffer();
+              attachments.push({
+                filename: singleFile.name,
+                content: Buffer.from(buffer),
+                contentType: singleFile.type
+              });
+            }
+          }
+        } else {
+          console.log(`${key} is single file: ${file.name} (${file.size} bytes)`);
+          // Handle single file
+          if (file.size > 0) {
+            console.log(`Adding attachment: ${file.name}`);
+            const buffer = await file.arrayBuffer();
+            attachments.push({
+              filename: file.name,
+              content: Buffer.from(buffer),
+              contentType: file.type
+            });
+          }
+        }
+      } else {
+        console.log(`No file found for key: ${key}`);
       }
     }
+    console.log(`Total attachments prepared: ${attachments.length}`);
 
     // Send email
     try {

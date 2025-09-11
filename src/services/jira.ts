@@ -7,6 +7,12 @@ interface JiraIssueData {
   requester: string;
   country: string;
   product: string;
+  translations?: {
+    jiraRequester: string;
+    jiraCountry: string;
+    jiraProduct: string;
+    jiraDescription: string;
+  };
 }
 
 interface JiraConfig {
@@ -65,19 +71,19 @@ class JiraService {
                 },
                 {
                   type: 'text',
-                  text: `Solicitante: ${issueData.requester}\n`
+                  text: `${issueData.translations?.jiraRequester || 'Requester'}: ${issueData.requester}\n`
                 },
                 {
                   type: 'text',
-                  text: `País: ${issueData.country}\n`
+                  text: `${issueData.translations?.jiraCountry || 'Country'}: ${issueData.country}\n`
                 },
                 {
                   type: 'text',
-                  text: `Producto: ${issueData.product}\n\n`
+                  text: `${issueData.translations?.jiraProduct || 'Product'}: ${issueData.product}\n\n`
                 },
                 {
                   type: 'text',
-                  text: `Descripción: ${issueData.description}`
+                  text: `${issueData.translations?.jiraDescription || 'Description'}: ${issueData.description}`
                 }
               ]
             }

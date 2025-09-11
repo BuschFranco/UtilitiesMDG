@@ -42,7 +42,10 @@ const { translations: t, currentLang } = Astro.props;
           <label for="existing_devid" class="form-label">{t.existingDevId}:</label>
           <div class="devid-input-group">
             <input type="text" id="existing_devid" name="existing_devid" class="form-input" placeholder={t.existingDevIdPlaceholder}>
-            <button type="button" id="load-data-btn" class="load-data-btn">{t.loadExistingData}</button>
+            <button type="button" id="load-data-btn" class="load-data-btn">
+              <span id="loadDataText">{t.loadExistingData}</span>
+              <span id="loadDataSpinner" class="loading" style="display: none; margin-left: 0.5rem;"></span>
+            </button>
           </div>
           <div id="devid-status" class="devid-status"></div>
         </div>
@@ -116,7 +119,7 @@ const { translations: t, currentLang } = Astro.props;
           <div id="tc-links-container">
             <div class="tc-link-item">
               <div class="tc-link-row">
-                <input type="url" name="tc_links[]" class="form-input tc-link-url" placeholder="https://ejemplo.com/terminos">
+                <input type="url" name="tc_links[]" class="form-input tc-link-url" placeholder={t.tcLinkUrlPlaceholder}>
                 <input type="text" name="tc_descriptions[]" class="form-input tc-link-description" placeholder={t.linkDescriptionPlaceholder}>
                 <button type="button" class="btn-add-tc" onclick="addTcLink()">+</button>
               </div>
@@ -147,18 +150,19 @@ const { translations: t, currentLang } = Astro.props;
           </p>
         </div>
         <div class="form-group">
-          <label for="images" class="form-label">Imágenes y Banners:</label>
+          <label for="images" class="form-label">{t.imagesAndBanners}:</label>
           <div class="file-upload-container">
-            <input type="file" id="images" name="images" class="file-input" multiple accept="image/*" required>
+            <input type="file" id="images" name="images" class="file-input" multiple accept="image/*">
             <label for="images" class="file-upload-label">
               <span class="upload-icon">📁</span>
               <span class="upload-text">{t.selectImages}</span>
             </label>
+            <div id="images-status" class="file-status" style="margin-top: 10px; color: #059669; font-weight: 500; display: none;"></div>
             <div class="file-list" id="images-list"></div>
           </div>
         </div>
         <div class="form-group">
-          <label for="logos" class="form-label">{t.logos} (Opcional):</label>
+          <label for="logos" class="form-label">{t.logos} ({t.optional}):</label>
           <div class="file-upload-container">
             <input type="file" id="logos" name="logos" class="file-input" multiple accept="image/*">
             <label for="logos" class="file-upload-label">
@@ -177,7 +181,7 @@ const { translations: t, currentLang } = Astro.props;
 
         
         <div class="form-group">
-          <label for="special_functionalities" class="form-label">{t.specialFunctionalities} (Opcional):</label>
+          <label for="special_functionalities" class="form-label">{t.specialFunctionalities} ({t.optional}):</label>
           <textarea id="special_functionalities" name="special_functionalities" class="form-textarea" rows="4" placeholder={t.specialFunctionalitiesPlaceholder}></textarea>
         </div>
       </section>
@@ -579,28 +583,6 @@ const { translations: t, currentLang } = Astro.props;
   .load-data-btn:disabled:hover {
     transform: none;
     box-shadow: 0 2px 8px 0 rgba(139, 92, 246, 0.15);
-  }
-
-  /* Loading state for the button */
-  .load-data-btn.loading {
-    pointer-events: none;
-  }
-
-  .load-data-btn.loading::after {
-    content: '';
-    position: absolute;
-    width: 16px;
-    height: 16px;
-    margin: auto;
-    border: 2px solid transparent;
-    border-top-color: #ffffff;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-  }
-
-  @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
   }
     border-left-color: #a855f7;
   }
@@ -1576,12 +1558,12 @@ const { translations: t, currentLang } = Astro.props;
         }
       
         // Disable button and show loading state
-        loadDataBtn.disabled = true;
-        loadDataBtn.classList.add('loading');
-        const originalText = loadDataBtn.textContent;
-        loadDataBtn.textContent = 'Cargando...';
+        const loadDataText = document.getElementById('loadDataText');
+        const loadDataSpinner = document.getElementById('loadDataSpinner');
         
-        showDevIdStatus(t.loadingData, 'loading');
+        loadDataBtn.disabled = true;
+        if (loadDataText) loadDataText.textContent = t.generating || 'Loading...';
+        if (loadDataSpinner) loadDataSpinner.style.display = 'inline-block';
       
         try {
           const response = await fetch(`/${currentLang}/api/get-brief?devId=${encodeURIComponent(devId)}`);
@@ -1590,7 +1572,7 @@ const { translations: t, currentLang } = Astro.props;
           if (result.success && result.data) {
             populateForm(result.data);
             mainFormContainer.style.display = 'block';
-            showDevIdStatus('Datos cargados correctamente', 'success');
+            showDevIdStatus(t.dataLoadedSuccessfully, 'success');
             // Re-validate after loading data
             setTimeout(() => {
               if (window.validateRequiredFields) {
@@ -1602,12 +1584,12 @@ const { translations: t, currentLang } = Astro.props;
           }
         } catch (error) {
           console.error('Error loading data:', error);
-          showDevIdStatus('Error al cargar los datos', 'error');
+          showDevIdStatus(t.errorLoadingData, 'error');
         } finally {
           // Re-enable button and restore original state
           loadDataBtn.disabled = false;
-          loadDataBtn.classList.remove('loading');
-          loadDataBtn.textContent = originalText;
+          if (loadDataText) loadDataText.textContent = t.loadExistingData;
+          if (loadDataSpinner) loadDataSpinner.style.display = 'none';
         }
       });
     }
@@ -1700,6 +1682,15 @@ const { translations: t, currentLang } = Astro.props;
           console.warn(`Element not found for field: ${formKey} (from ${dbKey})`);
         }
       });
+      
+      // Make requester email readonly and gray when data is loaded
+      const requesterEmailField = document.querySelector('[name="requester_email"]');
+      if (requesterEmailField && data.requesterEmail) {
+        requesterEmailField.readOnly = true;
+        requesterEmailField.style.backgroundColor = '#f5f5f5';
+        requesterEmailField.style.cursor = 'not-allowed';
+        requesterEmailField.style.color = '#666';
+      }
       
       // Handle array fields
       if (data.tcLinks && data.tcDescriptions) {
@@ -1887,7 +1878,7 @@ const { translations: t, currentLang } = Astro.props;
       
     } catch (error) {
       console.error('Error generating PDF:', error);
-      alert('Error generating PDF document');
+      alert(t.errorGeneratingPdf);
     }
   }
 
@@ -1898,9 +1889,9 @@ const { translations: t, currentLang } = Astro.props;
     newItem.className = 'tc-link-item';
     newItem.innerHTML = `
       <div class="tc-link-row">
-        <input type="url" name="tc_links[]" class="form-input tc-link-url" placeholder="https://ejemplo.com/terminos">
-        <input type="text" name="tc_descriptions[]" class="form-input tc-link-description" placeholder="Descripción del enlace">
-        <button type="button" class="btn-remove-tc" onclick="removeTcLink(this)">Eliminar</button>
+        <input type="url" name="tc_links[]" class="form-input tc-link-url" placeholder={t.tcLinkUrlPlaceholder}>
+        <input type="text" name="tc_descriptions[]" class="form-input tc-link-description" placeholder={t.linkDescription}>
+        <button type="button" class="btn-remove-tc" onclick="removeTcLink(this)">{t.remove}</button>
       </div>
     `;
     container.appendChild(newItem);
@@ -1920,7 +1911,7 @@ const { translations: t, currentLang } = Astro.props;
       <div class="color-row">
         <input type="color" name="colors[]" class="color-picker" value="#000000">
         <input type="text" name="color_descriptions[]" class="color-description" placeholder="${t.colorDescriptionPlaceholder}">
-        <button type="button" class="btn-remove-color" onclick="removeColor(this)">Eliminar</button>
+        <button type="button" class="btn-remove-color" onclick="removeColor(this)">{t.remove}</button>
       </div>
     `;
     container.appendChild(newItem);
@@ -2024,6 +2015,13 @@ const { translations: t, currentLang } = Astro.props;
     document.getElementById('saveBtn').addEventListener('click', async function(e) {
       e.preventDefault();
       
+      // Validate requester email is filled
+      const requesterEmailField = document.querySelector('[name="requester_email"]');
+      if (!requesterEmailField || !requesterEmailField.value.trim()) {
+        showAlert(t.requesterEmailRequired, 'error');
+        return;
+      }
+      
       setSaveLoading(true);
       alertContainer.style.display = 'none';
 
@@ -2053,6 +2051,16 @@ const { translations: t, currentLang } = Astro.props;
 
     form.addEventListener('submit', async function(e) {
       e.preventDefault();
+      
+      // Debug: Check file inputs before creating FormData
+      console.log('Frontend: Form submission started');
+      const fileInputs = ['images', 'logos', 'reference_image', 'guidelines_document', 'banners'];
+      fileInputs.forEach(inputId => {
+        const input = document.getElementById(inputId);
+        if (input && input.files) {
+          console.log(`Frontend: Input ${inputId} has ${input.files.length} files:`, Array.from(input.files).map(f => f.name));
+        }
+      });
       
       setLoading(true);
       alertContainer.style.display = 'none';
@@ -2150,11 +2158,30 @@ const { translations: t, currentLang } = Astro.props;
           }
         });
         
-        // Add files from original form
-        const originalFormData = new FormData(form);
-        for (const [key, value] of originalFormData.entries()) {
-          if (value instanceof File && value.size > 0) {
-            submitFormData.append(key, value);
+        // Add files from global storage
+        const fileInputs = ['images', 'logos', 'reference_image', 'guidelines_document', 'banners'];
+        console.log('Frontend: Adding files from global storage...');
+        
+        fileInputs.forEach(inputId => {
+          const files = window.fileStorage && window.fileStorage[inputId] ? window.fileStorage[inputId] : [];
+          if (files.length > 0) {
+            console.log(`Frontend: Found ${files.length} files in ${inputId} storage`);
+            files.forEach((file, index) => {
+              console.log(`Frontend: Adding file ${inputId}[${index}] = ${file.name} (${file.size} bytes)`);
+              submitFormData.append(inputId, file);
+            });
+          } else {
+            console.log(`Frontend: No files found in ${inputId} storage`);
+          }
+        });
+        
+        // Debug: Log all FormData entries
+        console.log('Frontend: All FormData entries:');
+        for (const [key, value] of submitFormData.entries()) {
+          if (value instanceof File) {
+            console.log(`  ${key}: ${value.name} (${value.size} bytes)`);
+          } else {
+            console.log(`  ${key}: ${value}`);
           }
         }
 
@@ -2183,21 +2210,47 @@ const { translations: t, currentLang } = Astro.props;
       }
     });
 
+    // Global file storage
+    window.fileStorage = window.fileStorage || {};
+
     // File upload functionality
     function setupFileUpload(inputId, listId) {
       const fileInput = document.getElementById(inputId);
       const fileList = document.getElementById(listId);
+      const statusElement = document.getElementById(inputId + '-status');
       let selectedFiles = [];
+      
+      // Store reference globally
+      window.fileStorage[inputId] = selectedFiles;
+
+      if (!fileInput || !fileList) {
+        return;
+      }
 
       fileInput.addEventListener('change', function(e) {
         const newFiles = Array.from(e.target.files);
         selectedFiles = [...selectedFiles, ...newFiles];
+        // Update global storage
+        window.fileStorage[inputId] = selectedFiles;
+        console.log(`Frontend: Updated ${inputId} storage with ${selectedFiles.length} files:`, selectedFiles.map(f => f.name));
         updateFileList();
         // Clear the input to allow selecting the same file again
         e.target.value = '';
       });
 
       function updateFileList() {
+        
+        // Update status element
+        if (statusElement) {
+          if (selectedFiles.length > 0) {
+            const fileNames = selectedFiles.map(file => file.name).join(', ');
+            statusElement.textContent = `✓ ${selectedFiles.length} ${t.filesSelected}: ${fileNames}`;
+            statusElement.style.display = 'block';
+          } else {
+            statusElement.style.display = 'none';
+          }
+        }
+        
         fileList.innerHTML = '';
         selectedFiles.forEach((file, index) => {
           const fileItem = document.createElement('div');
@@ -2217,6 +2270,9 @@ const { translations: t, currentLang } = Astro.props;
           removeBtn.type = 'button';
           removeBtn.addEventListener('click', () => {
             selectedFiles.splice(index, 1);
+            // Update global storage
+            window.fileStorage[inputId] = selectedFiles;
+            console.log(`Frontend: Removed file from ${inputId}, now has ${selectedFiles.length} files`);
             updateFileList();
           });
           
@@ -2234,6 +2290,7 @@ const { translations: t, currentLang } = Astro.props;
         const dt = new DataTransfer();
         selectedFiles.forEach(file => dt.items.add(file));
         fileInput.files = dt.files;
+        console.log(`Frontend: Updated ${inputId} with ${selectedFiles.length} files:`, selectedFiles.map(f => f.name));
       }
 
       function formatFileSize(bytes) {

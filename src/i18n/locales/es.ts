@@ -124,7 +124,24 @@ const es: Translations = {
   fillAllFields: 'Por favor completa todos los campos requeridos.',
   
   // Email
-  emailSubject: 'Nuevo Brief de Landing Page Generado'
+  emailSubject: 'Nuevo Brief de Landing Page Generado',
+  
+  // Additional translations
+  imagesAndBanners: 'Imágenes y Banners',
+  optional: 'Opcional',
+  filesSelected: 'archivo(s) seleccionado(s)',
+  dataLoadedSuccessfully: 'Datos cargados correctamente',
+  errorLoadingData: 'Error al cargar los datos',
+  approved: 'Aprobado',
+  pending: 'Pendiente',
+  errorGeneratingPdf: 'Error al generar el documento PDF',
+  remove: 'Eliminar',
+  requesterEmailRequired: 'El campo Requester Email es obligatorio para guardar cambios.',
+  tcLinkUrlPlaceholder: 'https://ejemplo.com/terminos',
+  jiraRequester: 'Solicitante',
+  jiraCountry: 'País',
+  jiraProduct: 'Producto',
+  jiraDescription: 'Descripción'
 };
 
 export default es;
