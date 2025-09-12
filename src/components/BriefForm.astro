@@ -1896,9 +1896,9 @@ const { translations: t, currentLang } = Astro.props;
     newItem.className = 'tc-link-item';
     newItem.innerHTML = `
       <div class="tc-link-row">
-        <input type="url" name="tc_links[]" class="form-input tc-link-url" placeholder={t.tcLinkUrlPlaceholder}>
-        <input type="text" name="tc_descriptions[]" class="form-input tc-link-description" placeholder={t.linkDescription}>
-        <button type="button" class="btn-remove-tc" onclick="removeTcLink(this)">{t.remove}</button>
+        <input type="url" name="tc_links[]" class="form-input tc-link-url" placeholder="${t.tcLinkUrlPlaceholder}">
+        <input type="text" name="tc_descriptions[]" class="form-input tc-link-description" placeholder="${t.linkDescription}">
+        <button type="button" class="btn-remove-tc" onclick="removeTcLink(this)">${t.remove}</button>
       </div>
     `;
     container.appendChild(newItem);
@@ -1918,7 +1918,7 @@ const { translations: t, currentLang } = Astro.props;
       <div class="color-row">
         <input type="color" name="colors[]" class="color-picker" value="#000000">
         <input type="text" name="color_descriptions[]" class="color-description" placeholder="${t.colorDescriptionPlaceholder}">
-        <button type="button" class="btn-remove-color" onclick="removeColor(this)">{t.remove}</button>
+        <button type="button" class="btn-remove-color" onclick="removeColor(this)">${t.remove}</button>
       </div>
     `;
     container.appendChild(newItem);

@@ -112,7 +112,7 @@ const en: Translations = {
   },
   
   // Buttons and actions
-
+  remove: 'Remove',
   francoNotification: 'This information will be sent to Franco (franco@mediadigitalgroup.com)',
   generateBrief: 'Generate Request',
   saveChanges: 'Save Changes',

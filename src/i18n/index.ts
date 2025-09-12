@@ -70,6 +70,7 @@ export interface Translations {
   trafficOriginPlaceholder: string;
   copiesPlaceholder: string;
   tcLinksPlaceholder: string;
+  tcLinkUrlPlaceholder: string;
   languagesPlaceholder: string;
   imagesPlaceholder: string;
   logosPlaceholder: string;
@@ -92,8 +93,10 @@ export interface Translations {
   };
   
   // Buttons and actions
+  remove: string;
   generateBrief: string;
   generating: string;
+  filesSelected: string;
 
   francoNotification: string;
   
